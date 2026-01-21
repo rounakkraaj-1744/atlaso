@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useDrag } from 'react-dnd';
+import { useState, useEffect } from 'react';
 import { CanvasNode } from '../../types';
 import { ComponentIconRenderer } from './ComponentIconRenderer';
 import { NodeDetailPopover } from './NodeDetailPopover';
@@ -74,22 +73,66 @@ export function ComponentNode({
   const [isHovered, setIsHovered] = useState(false);
   const [showDetailPopover, setShowDetailPopover] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [currentPosition, setCurrentPosition] = useState(node.position);
+  const [hasDragged, setHasDragged] = useState(false);
 
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: 'NODE',
-    item: { id: node.id, position: node.position },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-    end: (item, monitor) => {
-      const delta = monitor.getDifferenceFromInitialOffset();
-      if (delta) {
-        const newX = item.position.x + delta.x / scale;
-        const newY = item.position.y + delta.y / scale;
-        onPositionChange(node.id, { x: newX, y: newY });
+  // Update current position when node position changes externally
+  useEffect(() => {
+    if (!isDragging) {
+      setCurrentPosition(node.position);
+    }
+  }, [node.position, isDragging]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Only start drag on left click and not on delete button
+    if (e.button !== 0 || (e.target as HTMLElement).closest('button')) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsDragging(true);
+    setHasDragged(false);
+    setDragStart({
+      x: e.clientX - currentPosition.x * scale,
+      y: e.clientY - currentPosition.y * scale,
+    });
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newX = (e.clientX - dragStart.x) / scale;
+      const newY = (e.clientY - dragStart.y) / scale;
+
+      // Check if we've moved more than a small threshold (5px)
+      const deltaX = Math.abs(newX - currentPosition.x);
+      const deltaY = Math.abs(newY - currentPosition.y);
+      if (deltaX > 5 || deltaY > 5) {
+        setHasDragged(true);
       }
-    },
-  }));
+
+      setCurrentPosition({ x: newX, y: newY });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      // Commit the final position
+      onPositionChange(node.id, currentPosition);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragStart, scale, node.id, currentPosition, onPositionChange]);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -99,6 +142,11 @@ export function ComponentNode({
   };
 
   const handleClick = (e: React.MouseEvent) => {
+    // Don't open config if we just dragged
+    if (hasDragged) {
+      return;
+    }
+
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
     setPopoverPosition({
@@ -118,19 +166,20 @@ export function ComponentNode({
   return (
     <>
       <div
-        ref={drag as any}
+        onMouseDown={handleMouseDown}
         onClick={handleClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
           position: 'absolute',
-          left: node.position.x,
-          top: node.position.y,
+          left: currentPosition.x,
+          top: currentPosition.y,
           cursor: isDragging ? 'grabbing' : 'grab',
           opacity: isDimmed ? 0.3 : 1,
           transform: isHighlighted ? 'scale(1.05)' : 'scale(1)',
+          userSelect: 'none',
         }}
-        className={`relative bg-slate-800 border-2 ${status.border} rounded-lg transition-all ${isDragging ? 'opacity-50' : ''
+        className={`relative bg-slate-800 border-2 ${status.border} rounded-lg ${isDragging ? '' : 'transition-all'} ${isDragging ? 'opacity-70 shadow-2xl' : ''
           } ${node.status === 'bottleneck' || node.status === 'overloaded'
             ? 'animate-pulse-slow shadow-xl ' + status.glow
             : 'shadow-lg hover:shadow-xl'
