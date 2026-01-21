@@ -24,6 +24,12 @@ export type ComponentType =
 
 export type ConnectionType = 'sync' | 'async';
 
+export type AssumptionSource = 'default' | 'user-provided' | 'heuristic';
+
+export type VisualPriority = 'critical' | 'normal' | 'background';
+
+export type ScenarioPreset = 'normal' | 'flash-sale' | 'black-friday' | 'incident';
+
 export interface ComponentDefinition {
     type: ComponentType;
     category: ComponentCategory;
@@ -31,6 +37,12 @@ export interface ComponentDefinition {
     description: string;
     defaultThroughput: number;
     defaultLatency: number;
+}
+
+export interface ConfigAssumptions {
+    throughput: AssumptionSource;
+    latency: AssumptionSource;
+    scalingFactor: AssumptionSource;
 }
 
 export interface CanvasNode {
@@ -45,7 +57,9 @@ export interface CanvasNode {
         failureBehavior: string;
         notes: string;
     };
+    assumptions?: ConfigAssumptions;
     status: 'healthy' | 'warning' | 'bottleneck' | 'overloaded';
+    visualPriority?: VisualPriority;
 }
 
 export interface Connection {
@@ -55,6 +69,7 @@ export interface Connection {
     type: ConnectionType;
     hasRetry: boolean;
     hasBuffer: boolean;
+    visualPriority?: VisualPriority;
 }
 
 export interface SystemConstraints {
@@ -68,17 +83,49 @@ export interface SystemConstraints {
     consumerLagTolerance: number;
 }
 
+export interface ScenarioDefinition {
+    name: string;
+    description: string;
+    constraints: SystemConstraints;
+}
+
+export interface FailurePropagationPath {
+    nodeIds: string[];
+    severity: 'high' | 'medium' | 'low';
+    timeToFailure: number; // seconds
+}
+
 export interface AnalysisResult {
     verdict: 'pass' | 'risky' | 'fail';
+    firstFailure?: {
+        nodeId: string;
+        nodeName: string;
+        timeToFailure: number; // seconds
+        reason: string;
+    };
     bottlenecks: Array<{
         nodeId: string;
         nodeName: string;
         severity: 'high' | 'medium' | 'low';
         reason: string;
+        timeToFailure?: number; // seconds
+        upstreamSources?: string[]; // node IDs
+        downstreamImpacts?: string[]; // node IDs
     }>;
     warnings: Array<{
         type: 'queue-growth' | 'latency-violation' | 'resource-exhaustion';
         message: string;
+        timeToFailure?: number; // seconds
+    }>;
+    failurePropagationPaths?: FailurePropagationPath[];
+    assumptions: Array<{
+        nodeId: string;
+        nodeName: string;
+        field: string;
+        value: number | string;
+        source: AssumptionSource;
+        impact: 'high' | 'medium' | 'low';
+        explanation: string;
     }>;
 }
 
@@ -88,4 +135,34 @@ export interface Suggestion {
     why: string;
     tradeoff: string;
     impact: 'high' | 'medium' | 'low';
+}
+
+export interface ArchitectureSnapshot {
+    id: string;
+    name: string;
+    timestamp: number;
+    nodes: CanvasNode[];
+    connections: Connection[];
+    constraints: SystemConstraints;
+    analysis?: AnalysisResult;
+}
+
+export interface ArchitectureComparison {
+    before: ArchitectureSnapshot;
+    after: ArchitectureSnapshot;
+    diff: {
+        addedNodes: string[];
+        removedNodes: string[];
+        modifiedNodes: string[];
+        addedConnections: string[];
+        removedConnections: string[];
+    };
+    metrics: {
+        bottlenecksBefore: number;
+        bottlenecksAfter: number;
+        latencyBefore: number;
+        latencyAfter: number;
+        verdictBefore: 'pass' | 'risky' | 'fail';
+        verdictAfter: 'pass' | 'risky' | 'fail';
+    };
 }
