@@ -1,0 +1,34 @@
+:root {
+    /* Background colors */
+    --color-bg-primary: 217 33% 7%;
+    --color-bg-secondary: 217 33% 10%;
+    --color-bg-tertiary: 217 33% 13%;
+
+    /* Text colors */
+    --color-text-primary: 210 40% 98%;
+    --color-text-secondary: 215 20% 65%;
+    --color-text-tertiary: 215 16% 47%;
+
+    /* Accent colors */
+    --color-accent-blue: 217 91% 60%;
+    --color-accent-green: 142 76% 36%;
+    --color-accent-yellow: 45 93% 47%;
+    --color-accent-red: 0 84% 60%;
+    --color-accent-orange: 25 95% 53%;
+    --color-accent-purple: 271 81% 56%;
+
+    /* Border colors */
+    --color-border: 217 33% 17%;
+    --color-border-hover: 217 33% 25%;
+
+    /* Semantic colors */
+    --color-success: var(--color-accent-green);
+    --color-warning: var(--color-accent-yellow);
+    --color-error: var(--color-accent-red);
+    --color-info: var(--color-accent-blue);
+}
+
+/* Dark mode (default) */
+.dark {
+    color-scheme: dark;
+}
