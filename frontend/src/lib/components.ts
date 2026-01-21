@@ -1,0 +1,248 @@
+import { ComponentDefinition, ComponentCategory } from '../types';
+
+export const COMPONENT_CATEGORIES: Record<ComponentCategory, string> = {
+    traffic: 'Traffic & Networking',
+    compute: 'Compute',
+    messaging: 'Messaging & Streaming',
+    storage: 'Caching & Storage',
+    observability: 'Observability',
+};
+
+export const COMPONENTS: ComponentDefinition[] = [
+    // Traffic & Networking
+    {
+        id: 'load-balancer',
+        name: 'Load Balancer',
+        category: 'traffic',
+        icon: 'Scale',
+        description: 'Distributes incoming traffic across multiple servers',
+        defaultConfig: {
+            throughput: 10000,
+            latency: 5,
+            scalingFactor: 1,
+            failureRate: 0.1,
+            retryPolicy: { enabled: false, maxRetries: 0, backoffMs: 0 },
+            notes: '',
+        },
+    },
+    {
+        id: 'api-gateway',
+        name: 'API Gateway',
+        category: 'traffic',
+        icon: 'Network',
+        description: 'Single entry point for API requests with auth & rate limiting',
+        defaultConfig: {
+            throughput: 5000,
+            latency: 10,
+            scalingFactor: 1,
+            failureRate: 0.1,
+            retryPolicy: { enabled: true, maxRetries: 3, backoffMs: 100 },
+            notes: '',
+        },
+    },
+    {
+        id: 'cdn',
+        name: 'CDN',
+        category: 'traffic',
+        icon: 'Globe',
+        description: 'Content delivery network for static assets',
+        defaultConfig: {
+            throughput: 50000,
+            latency: 20,
+            scalingFactor: 1,
+            failureRate: 0.01,
+            retryPolicy: { enabled: false, maxRetries: 0, backoffMs: 0 },
+            notes: '',
+        },
+    },
+    // Compute
+    {
+        id: 'api-server',
+        name: 'API Server',
+        category: 'compute',
+        icon: 'Server',
+        description: 'Handles synchronous API requests',
+        defaultConfig: {
+            throughput: 1000,
+            latency: 50,
+            scalingFactor: 1,
+            failureRate: 0.5,
+            retryPolicy: { enabled: true, maxRetries: 3, backoffMs: 200 },
+            notes: '',
+        },
+    },
+    {
+        id: 'worker',
+        name: 'Worker',
+        category: 'compute',
+        icon: 'Cpu',
+        description: 'Processes background jobs asynchronously',
+        defaultConfig: {
+            throughput: 500,
+            latency: 100,
+            scalingFactor: 1,
+            failureRate: 1,
+            retryPolicy: { enabled: true, maxRetries: 5, backoffMs: 1000 },
+            notes: '',
+        },
+    },
+    {
+        id: 'cron-job',
+        name: 'Cron Job',
+        category: 'compute',
+        icon: 'Clock',
+        description: 'Scheduled periodic tasks',
+        defaultConfig: {
+            throughput: 10,
+            latency: 500,
+            scalingFactor: 1,
+            failureRate: 0.5,
+            retryPolicy: { enabled: true, maxRetries: 3, backoffMs: 5000 },
+            notes: '',
+        },
+    },
+    // Messaging & Streaming
+    {
+        id: 'kafka',
+        name: 'Kafka',
+        category: 'messaging',
+        icon: 'Workflow',
+        description: 'Distributed event streaming platform',
+        defaultConfig: {
+            throughput: 100000,
+            latency: 10,
+            scalingFactor: 1,
+            failureRate: 0.01,
+            retryPolicy: { enabled: false, maxRetries: 0, backoffMs: 0 },
+            notes: '',
+        },
+    },
+    {
+        id: 'rabbitmq',
+        name: 'RabbitMQ',
+        category: 'messaging',
+        icon: 'MessageSquare',
+        description: 'Message broker for async communication',
+        defaultConfig: {
+            throughput: 10000,
+            latency: 5,
+            scalingFactor: 1,
+            failureRate: 0.1,
+            retryPolicy: { enabled: false, maxRetries: 0, backoffMs: 0 },
+            notes: '',
+        },
+    },
+    {
+        id: 'bullmq',
+        name: 'BullMQ',
+        category: 'messaging',
+        icon: 'ListTodo',
+        description: 'Redis-based job queue',
+        defaultConfig: {
+            throughput: 5000,
+            latency: 10,
+            scalingFactor: 1,
+            failureRate: 0.2,
+            retryPolicy: { enabled: true, maxRetries: 3, backoffMs: 1000 },
+            notes: '',
+        },
+    },
+    // Caching & Storage
+    {
+        id: 'redis',
+        name: 'Redis',
+        category: 'storage',
+        icon: 'Database',
+        description: 'In-memory cache for fast data access',
+        defaultConfig: {
+            throughput: 100000,
+            latency: 1,
+            scalingFactor: 1,
+            failureRate: 0.01,
+            retryPolicy: { enabled: false, maxRetries: 0, backoffMs: 0 },
+            notes: '',
+        },
+    },
+    {
+        id: 'postgresql',
+        name: 'PostgreSQL',
+        category: 'storage',
+        icon: 'Database',
+        description: 'Relational database',
+        defaultConfig: {
+            throughput: 5000,
+            latency: 20,
+            scalingFactor: 1,
+            failureRate: 0.1,
+            retryPolicy: { enabled: true, maxRetries: 3, backoffMs: 500 },
+            notes: '',
+        },
+    },
+    {
+        id: 'mongodb',
+        name: 'MongoDB',
+        category: 'storage',
+        icon: 'Database',
+        description: 'NoSQL document database',
+        defaultConfig: {
+            throughput: 10000,
+            latency: 15,
+            scalingFactor: 1,
+            failureRate: 0.1,
+            retryPolicy: { enabled: true, maxRetries: 3, backoffMs: 500 },
+            notes: '',
+        },
+    },
+    // Observability
+    {
+        id: 'metrics',
+        name: 'Metrics',
+        category: 'observability',
+        icon: 'BarChart3',
+        description: 'Time-series metrics collection',
+        defaultConfig: {
+            throughput: 50000,
+            latency: 5,
+            scalingFactor: 1,
+            failureRate: 0.01,
+            retryPolicy: { enabled: false, maxRetries: 0, backoffMs: 0 },
+            notes: '',
+        },
+    },
+    {
+        id: 'logs',
+        name: 'Logs',
+        category: 'observability',
+        icon: 'FileText',
+        description: 'Centralized logging system',
+        defaultConfig: {
+            throughput: 100000,
+            latency: 10,
+            scalingFactor: 1,
+            failureRate: 0.01,
+            retryPolicy: { enabled: false, maxRetries: 0, backoffMs: 0 },
+            notes: '',
+        },
+    },
+    {
+        id: 'tracing',
+        name: 'Tracing',
+        category: 'observability',
+        icon: 'GitBranch',
+        description: 'Distributed request tracing',
+        defaultConfig: {
+            throughput: 20000,
+            latency: 5,
+            scalingFactor: 1,
+            failureRate: 0.01,
+            retryPolicy: { enabled: false, maxRetries: 0, backoffMs: 0 },
+            notes: '',
+        },
+    },
+];
+
+export const getComponentsByCategory = (category: ComponentCategory) =>
+    COMPONENTS.filter((c) => c.category === category);
+
+export const getComponentById = (id: string) =>
+    COMPONENTS.find((c) => c.id === id);
