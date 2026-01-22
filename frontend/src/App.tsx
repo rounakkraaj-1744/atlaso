@@ -1,68 +1,40 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ComponentRegistryPanel } from './components/sidebar/ComponentPalette';
 import { Canvas } from './components/canvas/ArchitectureCanvas';
 import { RightPanel } from './components/analysis/RightPanel';
-import { CanvasNode, SystemConstraints, AnalysisResult, Suggestion, Connection } from './types';
 import { ComponentPack } from './types/registry';
+import { AnalysisResult, Suggestion } from './types';
 import { analyzeSystem } from './utils/analyzer';
 import { demoNodes, demoConnections } from './data/demoArchitecture';
 import { Play, Save, FolderOpen, RotateCcw, Keyboard } from 'lucide-react';
+import { useArchitectureStore } from './features/architecture/store';
+import { useConstraintsStore } from './features/constraints/store';
 
 export default function App() {
-  const [nodes, setNodes] = useState<CanvasNode[]>(demoNodes);
-  const [connections, setConnections] = useState<Connection[]>(demoConnections);
+  // Zustand stores
+  const nodes = useArchitectureStore((state) => state.nodes);
+  const connections = useArchitectureStore((state) => state.connections);
+  const addNode = useArchitectureStore((state) => state.addNode);
+  const updateNode = useArchitectureStore((state) => state.updateNode);
+  const deleteNode = useArchitectureStore((state) => state.deleteNode);
+  const duplicateNode = useArchitectureStore((state) => state.duplicateNode);
+  const setNodePosition = useArchitectureStore((state) => state.setNodePosition);
+  const addConnection = useArchitectureStore((state) => state.addConnection);
+  const updateConnection = useArchitectureStore((state) => state.updateConnection);
+  const deleteConnection = useArchitectureStore((state) => state.deleteConnection);
+  const resetCanvas = useArchitectureStore((state) => state.resetCanvas);
+
+  const constraints = useConstraintsStore((state) => state.constraints);
+  const updateConstraints = useConstraintsStore((state) => state.updateConstraints);
+
+  // Local UI state
   const [enabledPacks, setEnabledPacks] = useState<Set<ComponentPack>>(
     new Set(['aws', 'gcp', 'azure', 'oss'])
   );
-  const [constraints, setConstraints] = useState<SystemConstraints>({
-    avgRPS: 1000,
-    peakRPS: 5000,
-    readWriteRatio: 80,
-    payloadSize: 10,
-    slaLatency: 100,
-    retryAttempts: 3,
-    rateLimitRPS: 10000,
-    consumerLagTolerance: 30,
-  });
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-
-  const handleAddNode = (node: CanvasNode) => {
-    setNodes((prev) => [...prev, node]);
-  };
-
-  const handleUpdateNode = (updatedNode: CanvasNode) => {
-    setNodes((prev) => prev.map((node) => (node.id === updatedNode.id ? updatedNode : node)));
-  };
-
-  const handleNodePositionChange = (id: string, position: { x: number; y: number }) => {
-    setNodes((prev) =>
-      prev.map((node) => (node.id === id ? { ...node, position } : node))
-    );
-  };
-
-  const handleDeleteNode = (nodeId: string) => {
-    setNodes((prev) => prev.filter((n) => n.id !== nodeId));
-    setConnections((prev) => prev.filter((c) => c.sourceId !== nodeId && c.targetId !== nodeId));
-  };
-
-  const handleDuplicateNode = (nodeId: string) => {
-    const node = nodes.find((n) => n.id === nodeId);
-    if (!node) return;
-
-    const newNode: CanvasNode = {
-      ...node,
-      id: `node-${Date.now()}`,
-      position: {
-        x: node.position.x + 50,
-        y: node.position.y + 50,
-      },
-    };
-
-    setNodes((prev) => [...prev, newNode]);
-  };
 
   const handleRunAnalysis = () => {
     const result = analyzeSystem(nodes, connections, constraints);
@@ -70,30 +42,36 @@ export default function App() {
     setSuggestions(result.suggestions);
 
     // Update node statuses based on analysis
-    setNodes((prev) =>
-      prev.map((node) => {
-        const bottleneck = result.analysis.bottlenecks.find((b) => b.nodeId === node.id);
-        if (bottleneck) {
-          return {
-            ...node,
-            status: bottleneck.severity === 'high' ? 'overloaded' : 'bottleneck',
-          };
-        }
-        return { ...node, status: 'healthy' };
-      })
-    );
+    result.analysis.bottlenecks.forEach((bottleneck) => {
+      const node = nodes.find((n) => n.id === bottleneck.nodeId);
+      if (node) {
+        updateNode(node.id, {
+          status: bottleneck.severity === 'high' ? 'overloaded' : 'bottleneck',
+        });
+      }
+    });
+
+    // Reset healthy nodes
+    nodes.forEach((node) => {
+      const isBottleneck = result.analysis.bottlenecks.some((b) => b.nodeId === node.id);
+      if (!isBottleneck && node.status !== 'healthy') {
+        updateNode(node.id, { status: 'healthy' });
+      }
+    });
   };
 
   const handleReset = () => {
-    setNodes([]);
-    setConnections([]);
+    resetCanvas();
     setAnalysis(null);
     setSuggestions([]);
   };
 
   const handleLoadDemo = () => {
-    setNodes(demoNodes);
-    setConnections(demoConnections);
+    // Clear existing
+    resetCanvas();
+    // Add demo nodes and connections
+    demoNodes.forEach((node) => addNode(node));
+    demoConnections.forEach((conn) => addConnection(conn));
   };
 
   const handleTogglePack = (pack: ComponentPack) => {
@@ -104,18 +82,6 @@ export default function App() {
       newPacks.add(pack);
     }
     setEnabledPacks(newPacks);
-  };
-
-  const handleUpdateConnection = (connection: Connection) => {
-    setConnections((prev) => prev.map((c) => (c.id === connection.id ? connection : c)));
-  };
-
-  const handleDeleteConnection = (connectionId: string) => {
-    setConnections((prev) => prev.filter((c) => c.id !== connectionId));
-  };
-
-  const handleAddConnection = (connection: Connection) => {
-    setConnections((prev) => [...prev, connection]);
   };
 
   // Auto-run analysis when constraints or nodes change
@@ -194,18 +160,18 @@ export default function App() {
           <Canvas
             nodes={nodes}
             connections={connections}
-            onAddNode={handleAddNode}
-            onUpdateNode={handleUpdateNode}
-            onNodePositionChange={handleNodePositionChange}
-            onDeleteNode={handleDeleteNode}
-            onDuplicateNode={handleDuplicateNode}
-            onUpdateConnection={handleUpdateConnection}
-            onDeleteConnection={handleDeleteConnection}
-            onAddConnection={handleAddConnection}
+            onAddNode={addNode}
+            onUpdateNode={(node) => updateNode(node.id, node)}
+            onNodePositionChange={setNodePosition}
+            onDeleteNode={deleteNode}
+            onDuplicateNode={duplicateNode}
+            onUpdateConnection={(conn) => updateConnection(conn.id, conn)}
+            onDeleteConnection={deleteConnection}
+            onAddConnection={addConnection}
           />
           <RightPanel
             constraints={constraints}
-            onConstraintsChange={setConstraints}
+            onConstraintsChange={updateConstraints}
             analysis={analysis}
             suggestions={suggestions}
             nodes={nodes}
