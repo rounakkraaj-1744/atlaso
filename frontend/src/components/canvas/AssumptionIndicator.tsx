@@ -41,10 +41,9 @@ export function AssumptionIndicator({ source, explanation, value, field }: Assum
                 {config.label}
             </span>
 
-            {/* Tooltip */}
             <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-slate-900 border border-slate-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="flex items-start gap-2">
-                    <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                    <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                         <div className="text-xs font-semibold text-slate-300 mb-1">
                             {field} ({config.tooltip})

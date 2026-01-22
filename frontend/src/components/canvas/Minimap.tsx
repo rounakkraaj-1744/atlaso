@@ -12,18 +12,16 @@ interface MinimapProps {
 export function Minimap({ nodes, connections, pan, scale }: MinimapProps) {
   if (nodes.length === 0) return null;
 
-  // Calculate bounds of all nodes
   const bounds = nodes.reduce(
     (acc, node) => ({
       minX: Math.min(acc.minX, node.position.x),
       minY: Math.min(acc.minY, node.position.y),
-      maxX: Math.max(acc.maxX, node.position.x + 288), // node width
-      maxY: Math.max(acc.maxY, node.position.y + 200), // approx node height
+      maxX: Math.max(acc.maxX, node.position.x + 288),
+      maxY: Math.max(acc.maxY, node.position.y + 200),
     }),
     { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
   );
 
-  // Add padding
   const padding = 50;
   bounds.minX -= padding;
   bounds.minY -= padding;
@@ -32,15 +30,11 @@ export function Minimap({ nodes, connections, pan, scale }: MinimapProps) {
 
   const contentWidth = bounds.maxX - bounds.minX;
   const contentHeight = bounds.maxY - bounds.minY;
-
-  // Minimap dimensions
   const minimapWidth = 200;
   const minimapHeight = 150;
   const scaleX = minimapWidth / contentWidth;
   const scaleY = minimapHeight / contentHeight;
   const minimapScale = Math.min(scaleX, scaleY);
-
-  // Viewport rectangle in minimap coordinates
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const viewportRect = {
@@ -58,7 +52,6 @@ export function Minimap({ nodes, connections, pan, scale }: MinimapProps) {
         height={minimapHeight}
         className="bg-slate-900/50 rounded"
       >
-        {/* Connections */}
         {connections.map((conn) => {
           const source = nodes.find((n) => n.id === conn.sourceId);
           const target = nodes.find((n) => n.id === conn.targetId);
@@ -83,37 +76,37 @@ export function Minimap({ nodes, connections, pan, scale }: MinimapProps) {
           );
         })}
 
-        {/* Nodes */}
-        {nodes.map((node) => {
-          const x = (node.position.x - bounds.minX) * minimapScale;
-          const y = (node.position.y - bounds.minY) * minimapScale;
-          const width = 288 * minimapScale;
-          const height = 150 * minimapScale;
+        {
+          nodes.map((node) => {
+            const x = (node.position.x - bounds.minX) * minimapScale;
+            const y = (node.position.y - bounds.minY) * minimapScale;
+            const width = 288 * minimapScale;
+            const height = 150 * minimapScale;
 
-          const color =
-            node.status === 'overloaded'
-              ? '#ef4444'
-              : node.status === 'bottleneck'
-                ? '#f97316'
-                : node.status === 'warning'
-                  ? '#eab308'
-                  : '#10b981';
+            const color =
+              node.status === 'overloaded'
+                ? '#ef4444'
+                : node.status === 'bottleneck'
+                  ? '#f97316'
+                  : node.status === 'warning'
+                    ? '#eab308'
+                    : '#10b981';
 
-          return (
-            <rect
-              key={node.id}
-              x={x}
-              y={y}
-              width={width}
-              height={height}
-              fill={color}
-              opacity={0.6}
-              rx={2}
-            />
-          );
-        })}
+            return (
+              <rect
+                key={node.id}
+                x={x}
+                y={y}
+                width={width}
+                height={height}
+                fill={color}
+                opacity={0.6}
+                rx={2}
+              />
+            );
+          })
+        }
 
-        {/* Viewport rectangle */}
         <rect
           x={viewportRect.x}
           y={viewportRect.y}

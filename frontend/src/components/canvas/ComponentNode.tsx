@@ -3,14 +3,7 @@ import type { CanvasNode } from '../../types';
 import { ComponentIconRenderer } from './ComponentIconRenderer';
 import { NodeDetailPopover } from './NodeDetailPopover';
 import { componentRegistry } from '../../features/registry/data/components';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  X,
-  ArrowRight,
-} from 'lucide-react';
-import type { ComponentType } from '../../types';
+import { AlertTriangle, CheckCircle2, XCircle, X, ArrowRight } from 'lucide-react';
 
 const statusConfig = {
   healthy: {
@@ -78,7 +71,6 @@ export function ComponentNode({
   const [currentPosition, setCurrentPosition] = useState(node.position);
   const [hasDragged, setHasDragged] = useState(false);
 
-  // Update current position when node position changes externally
   useEffect(() => {
     if (!isDragging) {
       setCurrentPosition(node.position);
@@ -86,10 +78,8 @@ export function ComponentNode({
   }, [node.position, isDragging]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Only start drag on left click and not on delete button
-    if (e.button !== 0 || (e.target as HTMLElement).closest('button')) {
+    if (e.button !== 0 || (e.target as HTMLElement).closest('button'))
       return;
-    }
 
     e.preventDefault();
     e.stopPropagation();
@@ -136,16 +126,13 @@ export function ComponentNode({
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onDelete) {
+    if (onDelete)
       onDelete(node.id);
-    }
   };
 
   const handleClick = (e: React.MouseEvent) => {
-    // Don't open config if we just dragged
-    if (hasDragged) {
+    if (hasDragged)
       return;
-    }
 
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
@@ -159,7 +146,6 @@ export function ComponentNode({
 
   const registryItem = componentRegistry[node.type];
   const status = statusConfig[node.status];
-  const StatusIcon = status.icon;
 
   const effectiveThroughput = node.config.throughput * node.config.scalingFactor;
 
@@ -185,7 +171,6 @@ export function ComponentNode({
             : 'shadow-lg hover:shadow-xl'
           } ${isHighlighted ? 'ring-4 ring-blue-500/50' : ''}`}
       >
-        {/* Delete Button */}
         {onDelete && (
           <button
             onClick={handleDelete}
@@ -196,7 +181,6 @@ export function ComponentNode({
           </button>
         )}
 
-        {/* DEFAULT VIEW: Minimal - Icon, Name, Status */}
         <div className={`px-4 py-3 ${status.bg} rounded-lg`}>
           <div className="flex items-center gap-3">
             <div>
@@ -221,12 +205,10 @@ export function ComponentNode({
               )}
             </div>
             <div className="flex items-center gap-2">
-              {/* Status Indicator Dot */}
               <div className={`w-2 h-2 rounded-full ${status.indicator}`} />
             </div>
           </div>
 
-          {/* HOVER STATE: Show throughput hint */}
           {isHovered && (
             <div className="mt-2 pt-2 border-t border-slate-700/50 flex items-center justify-between animate-in fade-in duration-200">
               <div className="flex items-center gap-1.5 text-xs text-slate-400">
@@ -240,19 +222,16 @@ export function ComponentNode({
           )}
         </div>
 
-        {/* Inline Explanation (for bottlenecks) */}
         {showInlineExplanation && inlineExplanation && (
           <div className="absolute top-full left-0 right-0 mt-2 p-2 bg-slate-900 border border-red-500/50 rounded text-xs text-slate-300 leading-relaxed shadow-xl z-20">
             {inlineExplanation}
           </div>
         )}
 
-        {/* Connection points */}
         <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-500 border-2 border-slate-900 opacity-0 hover:opacity-100 transition-opacity cursor-crosshair" />
         <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-500 border-2 border-slate-900 opacity-0 hover:opacity-100 transition-opacity cursor-crosshair" />
       </div>
 
-      {/* Detail Popover (CLICK STATE) */}
       {showDetailPopover && (
         <NodeDetailPopover
           node={node}

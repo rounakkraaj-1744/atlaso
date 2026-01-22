@@ -13,7 +13,6 @@ import { useArchitectureStore } from './features/architecture/store';
 import { useConstraintsStore } from './features/constraints/store';
 
 export default function App() {
-  // Zustand stores
   const nodes = useArchitectureStore((state) => state.nodes);
   const connections = useArchitectureStore((state) => state.connections);
   const addNode = useArchitectureStore((state) => state.addNode);
@@ -25,11 +24,9 @@ export default function App() {
   const updateConnection = useArchitectureStore((state) => state.updateConnection);
   const deleteConnection = useArchitectureStore((state) => state.deleteConnection);
   const resetCanvas = useArchitectureStore((state) => state.resetCanvas);
-
   const constraints = useConstraintsStore((state) => state.constraints);
   const updateConstraints = useConstraintsStore((state) => state.updateConstraints);
 
-  // Local UI state
   const [enabledPacks, setEnabledPacks] = useState<Set<ComponentPack>>(
     new Set(['aws', 'gcp', 'azure', 'oss'])
   );
@@ -41,7 +38,6 @@ export default function App() {
     setAnalysis(result.analysis);
     setSuggestions(result.suggestions);
 
-    // Update node statuses based on analysis
     result.analysis.bottlenecks.forEach((bottleneck) => {
       const node = nodes.find((n) => n.id === bottleneck.nodeId);
       if (node) {
@@ -51,7 +47,6 @@ export default function App() {
       }
     });
 
-    // Reset healthy nodes
     nodes.forEach((node) => {
       const isBottleneck = result.analysis.bottlenecks.some((b) => b.nodeId === node.id);
       if (!isBottleneck && node.status !== 'healthy') {
@@ -67,34 +62,28 @@ export default function App() {
   };
 
   const handleLoadDemo = () => {
-    // Clear existing
     resetCanvas();
-    // Add demo nodes and connections
     demoNodes.forEach((node) => addNode(node));
     demoConnections.forEach((conn) => addConnection(conn));
   };
 
   const handleTogglePack = (pack: ComponentPack) => {
     const newPacks = new Set(enabledPacks);
-    if (newPacks.has(pack)) {
+    if (newPacks.has(pack))
       newPacks.delete(pack);
-    } else {
+    else
       newPacks.add(pack);
-    }
     setEnabledPacks(newPacks);
   };
 
-  // Auto-run analysis when constraints or nodes change
   useEffect(() => {
-    if (nodes.length > 0) {
+    if (nodes.length > 0)
       handleRunAnalysis();
-    }
   }, [nodes.length, constraints]);
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="h-screen flex flex-col bg-slate-950">
-        {/* Header */}
         <header className="h-16 bg-slate-900 border-b border-slate-700/50 flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <div>
@@ -151,7 +140,6 @@ export default function App() {
           </div>
         </header>
 
-        {/* Main Layout */}
         <div className="flex-1 flex overflow-hidden">
           <ComponentRegistryPanel
             enabledPacks={enabledPacks}

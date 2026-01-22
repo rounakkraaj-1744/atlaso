@@ -42,7 +42,7 @@ export function SuggestionsTab({ suggestions }: SuggestionsTabProps) {
                     >
                         <div className="flex items-start gap-3">
                             <div
-                                className={`flex-shrink-0 w-8 h-8 rounded flex items-center justify-center mt-0.5 ${suggestion.impact === 'high'
+                                className={`shrink-0 w-8 h-8 rounded flex items-center justify-center mt-0.5 ${suggestion.impact === 'high'
                                     ? 'bg-emerald-500/20'
                                     : suggestion.impact === 'medium'
                                         ? 'bg-blue-500/20'
@@ -77,7 +77,7 @@ export function SuggestionsTab({ suggestions }: SuggestionsTabProps) {
 
                                 <div className="space-y-1.5">
                                     <div className="flex items-start gap-2">
-                                        <ArrowRight className="w-3.5 h-3.5 text-accent-green mt-0.5 flex-shrink-0" />
+                                        <ArrowRight className="w-3.5 h-3.5 text-accent-green mt-0.5 shrink-0" />
                                         <p className="text-xs text-text-secondary">
                                             <span className="font-medium text-accent-green">Why:</span>{' '}
                                             {suggestion.why}
@@ -85,7 +85,7 @@ export function SuggestionsTab({ suggestions }: SuggestionsTabProps) {
                                     </div>
 
                                     <div className="flex items-start gap-2">
-                                        <ArrowRight className="w-3.5 h-3.5 text-accent-yellow mt-0.5 flex-shrink-0" />
+                                        <ArrowRight className="w-3.5 h-3.5 text-accent-yellow mt-0.5 shrink-0" />
                                         <p className="text-xs text-text-secondary">
                                             <span className="font-medium text-accent-yellow">Tradeoff:</span>{' '}
                                             {suggestion.tradeoff}
@@ -100,4 +100,3 @@ export function SuggestionsTab({ suggestions }: SuggestionsTabProps) {
         </div>
     );
 }
-

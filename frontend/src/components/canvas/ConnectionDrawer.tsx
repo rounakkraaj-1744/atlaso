@@ -13,27 +13,22 @@ export function ConnectionDrawer({ connection, onClose, onUpdate, onDelete }: Co
   const [config, setConfig] = useState(connection);
 
   const handleSave = () => {
-    if (onUpdate) {
+    if (onUpdate) 
       onUpdate(config);
-    }
     onClose();
   };
 
   const handleDelete = () => {
-    if (onDelete) {
+    if (onDelete)
       onDelete();
-    }
     onClose();
   };
 
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
 
-      {/* Drawer */}
       <div className="fixed right-0 top-0 h-full w-96 bg-slate-900 border-l border-slate-700 shadow-2xl z-50 flex flex-col">
-        {/* Header */}
         <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
           <h2 className="font-semibold text-slate-200">Connection Settings</h2>
           <button onClick={onClose} className="p-1 hover:bg-slate-800 rounded transition-colors">
@@ -41,7 +36,6 @@ export function ConnectionDrawer({ connection, onClose, onUpdate, onDelete }: Co
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -87,7 +81,6 @@ export function ConnectionDrawer({ connection, onClose, onUpdate, onDelete }: Co
           </div>
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-4 border-t border-slate-700/50 space-y-3">
           <div className="flex gap-3">
             <button

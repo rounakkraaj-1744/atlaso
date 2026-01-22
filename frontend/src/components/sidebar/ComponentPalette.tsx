@@ -23,10 +23,8 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
     const components = Object.values(componentRegistry) as ComponentRegistryItem[];
 
     return components.filter((comp) => {
-      // Pack filter
       if (!enabledPacks.has(comp.pack)) return false;
 
-      // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesSearch =
@@ -34,32 +32,31 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
           comp.description.toLowerCase().includes(query) ||
           comp.tags.some((tag) => tag.includes(query)) ||
           comp.vendor.includes(query);
-        if (!matchesSearch) return false;
+        if (!matchesSearch)
+          return false;
       }
 
-      // Vendor filter
-      if (selectedVendors.size > 0 && !selectedVendors.has(comp.vendor)) return false;
+      if (selectedVendors.size > 0 && !selectedVendors.has(comp.vendor))
+        return false;
 
-      // Domain filter
-      if (selectedDomains.size > 0 && !selectedDomains.has(comp.domain)) return false;
+      if (selectedDomains.size > 0 && !selectedDomains.has(comp.domain))
+        return false;
 
-      // Data pattern filter
       if (selectedPatterns.size > 0) {
         const hasPattern = comp.dataPatterns.some((p) => selectedPatterns.has(p));
-        if (!hasPattern) return false;
+        if (!hasPattern)
+          return false;
       }
 
       return true;
     });
   }, [searchQuery, selectedVendors, selectedDomains, selectedPatterns, enabledPacks]);
 
-  // Group by domain
   const componentsByDomain = useMemo(() => {
     const grouped: Record<Domain, ComponentRegistryItem[]> = {} as any;
     filteredComponents.forEach((comp) => {
-      if (!grouped[comp.domain]) {
+      if (!grouped[comp.domain])
         grouped[comp.domain] = [];
-      }
       grouped[comp.domain].push(comp);
     });
     return grouped;
@@ -77,31 +74,28 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
 
   const toggleVendor = (vendor: Vendor) => {
     const newVendors = new Set(selectedVendors);
-    if (newVendors.has(vendor)) {
+    if (newVendors.has(vendor))
       newVendors.delete(vendor);
-    } else {
+    else
       newVendors.add(vendor);
-    }
     setSelectedVendors(newVendors);
   };
 
   const toggleDomainFilter = (domain: Domain) => {
     const newDomains = new Set(selectedDomains);
-    if (newDomains.has(domain)) {
+    if (newDomains.has(domain))
       newDomains.delete(domain);
-    } else {
+  else
       newDomains.add(domain);
-    }
     setSelectedDomains(newDomains);
   };
 
   const togglePattern = (pattern: DataPattern) => {
     const newPatterns = new Set(selectedPatterns);
-    if (newPatterns.has(pattern)) {
+    if (newPatterns.has(pattern))
       newPatterns.delete(pattern);
-    } else {
+    else
       newPatterns.add(pattern);
-    }
     setSelectedPatterns(newPatterns);
   };
 
@@ -116,13 +110,11 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
 
   return (
     <div className="w-80 h-full bg-slate-900 border-r border-slate-700/50 flex flex-col">
-      {/* Header */}
       <div className="p-4 border-b border-slate-700/50">
         <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-3">
           Component Registry
         </h2>
 
-        {/* Search */}
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input
@@ -134,7 +126,6 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
           />
         </div>
 
-        {/* Filter Toggle */}
         <button
           onClick={() => setShowFilters(!showFilters)}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-300 hover:bg-slate-700 transition-colors"
@@ -151,10 +142,8 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
           <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
         </button>
 
-        {/* Filters Panel */}
         {showFilters && (
           <div className="mt-3 p-3 bg-slate-800 border border-slate-700 rounded-lg space-y-3">
-            {/* Vendor Filter */}
             <div>
               <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Vendor</div>
               <div className="flex flex-wrap gap-1">
@@ -173,7 +162,6 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
               </div>
             </div>
 
-            {/* Domain Filter */}
             <div>
               <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Domain</div>
               <div className="flex flex-wrap gap-1">
@@ -192,7 +180,6 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
               </div>
             </div>
 
-            {/* Data Pattern Filter */}
             <div>
               <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Pattern</div>
               <div className="flex flex-wrap gap-1">
@@ -223,7 +210,6 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
         )}
       </div>
 
-      {/* Component Packs */}
       <div className="px-4 py-3 border-b border-slate-700/50">
         <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-2">
           <Package className="w-3.5 h-3.5" />
@@ -249,7 +235,6 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
         </div>
       </div>
 
-      {/* Components List */}
       <div className="flex-1 overflow-y-auto p-3">
         {Object.keys(componentsByDomain).length === 0 ? (
           <div className="text-center py-8 text-slate-500 text-sm">
@@ -285,7 +270,6 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
         )}
       </div>
 
-      {/* Footer Stats */}
       <div className="px-4 py-3 border-t border-slate-700/50">
         <div className="text-xs text-slate-500">
           {filteredComponents.length} components loaded

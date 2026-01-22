@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
 import { ScenarioSelector } from './ScenarioSelector';
 import type { SystemConstraints, ScenarioPreset } from '../../types';
 import { scenarioPresets } from '../../features/constraints/data/scenarios';

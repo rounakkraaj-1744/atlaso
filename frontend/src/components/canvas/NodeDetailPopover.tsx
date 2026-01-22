@@ -12,13 +12,11 @@ interface NodeDetailPopoverProps {
 export function NodeDetailPopover({ node, onClose, onEdit, position }: NodeDetailPopoverProps) {
     return (
         <>
-            {/* Backdrop */}
             <div
                 className="fixed inset-0 z-40"
                 onClick={onClose}
             />
 
-            {/* Popover */}
             <div
                 className="fixed z-50 w-80 bg-slate-800 border-2 border-slate-700 rounded-lg shadow-2xl"
                 style={{
@@ -26,7 +24,6 @@ export function NodeDetailPopover({ node, onClose, onEdit, position }: NodeDetai
                     top: `${position.y}px`,
                 }}
             >
-                {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
                     <h3 className="font-semibold text-slate-200">{node.config.name}</h3>
                     <button
@@ -37,9 +34,7 @@ export function NodeDetailPopover({ node, onClose, onEdit, position }: NodeDetai
                     </button>
                 </div>
 
-                {/* Content */}
                 <div className="p-4 space-y-4">
-                    {/* Capacity */}
                     <div>
                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
                             Capacity Assumptions

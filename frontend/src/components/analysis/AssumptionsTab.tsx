@@ -79,7 +79,7 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
             {/* Warning Banner */}
             <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <div className="flex items-start gap-2">
-                    <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                         <p className="text-xs text-blue-300 font-semibold mb-1">
                             Assumptions Impact Analysis Accuracy
@@ -92,20 +92,14 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
                 </div>
             </div>
 
-            {/* High Impact Assumptions */}
             {renderAssumptionGroup(highImpact, 'High Impact Assumptions', 'red')}
-
-            {/* Medium Impact Assumptions */}
             {renderAssumptionGroup(mediumImpact, 'Medium Impact Assumptions', 'yellow')}
-
-            {/* Low Impact Assumptions */}
             {renderAssumptionGroup(lowImpact, 'Low Impact Assumptions', 'blue')}
 
-            {/* Recommendations */}
             {highImpact.length > 0 && (
                 <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
                     <div className="flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
+                        <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                             <p className="text-xs text-orange-300 font-semibold mb-1">
                                 {highImpact.length} High-Impact Assumptions Detected

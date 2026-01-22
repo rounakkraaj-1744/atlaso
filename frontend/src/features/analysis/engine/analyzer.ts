@@ -1,8 +1,5 @@
 import type { CanvasNode, SystemConstraints, AnalysisResult, Suggestion, Connection } from '../../../types';
 
-/**
- * Calculate time to failure in seconds based on throughput deficit
- */
 function calculateTimeToFailure(
   currentThroughput: number,
   requiredThroughput: number,
@@ -11,40 +8,24 @@ function calculateTimeToFailure(
   const deficit = requiredThroughput - currentThroughput;
   if (deficit <= 0) return Infinity;
 
-  // Time = Buffer Capacity / Deficit Rate
-  // Assuming a typical queue buffer of 1000 messages
   return Math.round(bufferCapacity / deficit);
 }
 
-/**
- * Find upstream sources for a given node
- */
 function findUpstreamSources(nodeId: string, connections: Connection[]): string[] {
   return connections
     .filter(c => c.targetId === nodeId)
     .map(c => c.sourceId);
 }
 
-/**
- * Find downstream impacts for a given node
- */
 function findDownstreamImpacts(nodeId: string, connections: Connection[]): string[] {
   return connections
     .filter(c => c.sourceId === nodeId)
     .map(c => c.targetId);
 }
 
-/**
- * Track assumption sources for a node
- */
-function trackAssumptions(
-  node: CanvasNode,
-  defaultThroughput: number,
-  defaultLatency: number
-): AnalysisResult['assumptions'] {
+function trackAssumptions( node: CanvasNode, defaultThroughput: number, defaultLatency: number): AnalysisResult['assumptions'] {
   const assumptions: AnalysisResult['assumptions'] = [];
 
-  // Check if using default throughput
   if (!node.assumptions?.throughput || node.assumptions.throughput === 'default') {
     assumptions.push({
       nodeId: node.id,
@@ -57,7 +38,6 @@ function trackAssumptions(
     });
   }
 
-  // Check if using default latency
   if (!node.assumptions?.latency || node.assumptions.latency === 'default') {
     assumptions.push({
       nodeId: node.id,
@@ -70,7 +50,6 @@ function trackAssumptions(
     });
   }
 
-  // Check if using default scaling factor
   if (node.config.scalingFactor === 1) {
     assumptions.push({
       nodeId: node.id,
@@ -86,11 +65,7 @@ function trackAssumptions(
   return assumptions;
 }
 
-export function analyzeSystem(
-  nodes: CanvasNode[],
-  connections: Connection[],
-  constraints: SystemConstraints
-): { analysis: AnalysisResult; suggestions: Suggestion[] } {
+export function analyzeSystem( nodes: CanvasNode[], connections: Connection[], constraints: SystemConstraints ): { analysis: AnalysisResult; suggestions: Suggestion[] } {
   if (nodes.length === 0) {
     return {
       analysis: {
@@ -111,24 +86,19 @@ export function analyzeSystem(
   let firstFailureTime = Infinity;
   let firstFailureNode: AnalysisResult['firstFailure'] | undefined;
 
-  // Analyze each node against constraints
   nodes.forEach((node) => {
     const effectiveThroughput = node.config.throughput * node.config.scalingFactor;
 
-    // Track assumptions for this node
     const nodeAssumptions = trackAssumptions(node, node.config.throughput, node.config.latency);
     allAssumptions.push(...nodeAssumptions);
 
-    // Find upstream and downstream nodes
     const upstreamSources = findUpstreamSources(node.id, connections);
     const downstreamImpacts = findDownstreamImpacts(node.id, connections);
 
-    // OPINIONATED ANALYSIS: Throughput capacity check
     if (effectiveThroughput < constraints.peakRPS) {
       const timeToFailure = calculateTimeToFailure(effectiveThroughput, constraints.peakRPS);
       const severity = effectiveThroughput < constraints.avgRPS ? 'high' : 'medium';
 
-      // Track first failure
       if (timeToFailure < firstFailureTime) {
         firstFailureTime = timeToFailure;
         firstFailureNode = {
@@ -143,9 +113,7 @@ export function analyzeSystem(
         nodeId: node.id,
         nodeName: node.config.name,
         severity,
-        reason: severity === 'high'
-          ? `At peak load, this component cannot keep up. Throughput capacity (${effectiveThroughput.toLocaleString()} rps) is below peak demand (${constraints.peakRPS.toLocaleString()} rps). Queue depth grows unbounded after ~${timeToFailure} seconds. System fails.`
-          : `Throughput capacity (${effectiveThroughput.toLocaleString()} rps) is below peak load (${constraints.peakRPS.toLocaleString()} rps). Component saturates under burst traffic. Latency degrades after ~${timeToFailure} seconds.`,
+        reason: severity === 'high' ? `At peak load, this component cannot keep up. Throughput capacity (${effectiveThroughput.toLocaleString()} rps) is below peak demand (${constraints.peakRPS.toLocaleString()} rps). Queue depth grows unbounded after ~${timeToFailure} seconds. System fails.` : `Throughput capacity (${effectiveThroughput.toLocaleString()} rps) is below peak load (${constraints.peakRPS.toLocaleString()} rps). Component saturates under burst traffic. Latency degrades after ~${timeToFailure} seconds.`,
         timeToFailure,
         upstreamSources,
         downstreamImpacts,
@@ -160,7 +128,6 @@ export function analyzeSystem(
       });
     }
 
-    // OPINIONATED ANALYSIS: Latency violations
     if (node.config.latency > constraints.slaLatency) {
       const violationPercent = Math.round(((node.config.latency - constraints.slaLatency) / constraints.slaLatency) * 100);
 
@@ -169,7 +136,6 @@ export function analyzeSystem(
         message: `${node.config.name} p95 latency (${node.config.latency}ms) exceeds SLA target (${constraints.slaLatency}ms) by ${violationPercent}%. End-to-end latency will breach requirements. ${Math.round((node.config.latency / constraints.slaLatency) * 100)}% of requests violate SLA.`,
       });
 
-      // Suggest caching for high-latency databases
       if (node.type === 'postgresql' || node.type === 'mongodb') {
         const hasRedis = nodes.some((n) => n.type === 'redis');
         if (!hasRedis && constraints.readWriteRatio > 70) {
@@ -185,7 +151,6 @@ export function analyzeSystem(
     }
   });
 
-  // OPINIONATED ANALYSIS: Synchronous chain latency
   const syncChains = findSyncChains(nodes, connections);
   syncChains.forEach((chain) => {
     const totalLatency = chain.reduce((sum, nodeId) => {
@@ -194,10 +159,7 @@ export function analyzeSystem(
     }, 0);
 
     if (totalLatency > constraints.slaLatency) {
-      const chainNames = chain
-        .map(id => nodes.find(n => n.id === id)?.config.name)
-        .filter(Boolean)
-        .join(' → ');
+      const chainNames = chain.map(id => nodes.find(n => n.id === id)?.config.name).filter(Boolean).join(' → ');
 
       warnings.push({
         type: 'latency-violation',
@@ -217,25 +179,18 @@ export function analyzeSystem(
     }
   });
 
-  // OPINIONATED ANALYSIS: Queue consumer throughput
   const queueNodes = nodes.filter((n) => n.type === 'kafka' || n.type === 'rabbitmq' || n.type === 'bullmq');
   queueNodes.forEach((queue) => {
-    const producers = connections
-      .filter((c) => c.targetId === queue.id)
-      .map((c) => nodes.find((n) => n.id === c.sourceId))
-      .filter((n): n is CanvasNode => n !== undefined);
+    const producers = connections.filter((c) => c.targetId === queue.id).map((c) => nodes.find((n) => n.id === c.sourceId)).filter((n): n is CanvasNode => n !== undefined);
 
-    const consumers = connections
-      .filter((c) => c.sourceId === queue.id)
-      .map((c) => nodes.find((n) => n.id === c.targetId))
-      .filter((n): n is CanvasNode => n !== undefined);
+    const consumers = connections.filter((c) => c.sourceId === queue.id).map((c) => nodes.find((n) => n.id === c.targetId)).filter((n): n is CanvasNode => n !== undefined);
 
     const producerRate = producers.reduce((sum, p) => sum + p.config.throughput * p.config.scalingFactor, 0);
     const consumerRate = consumers.reduce((sum, c) => sum + c.config.throughput * c.config.scalingFactor, 0);
 
     if (consumerRate < producerRate) {
       const deficit = producerRate - consumerRate;
-      const timeToFailure = calculateTimeToFailure(consumerRate, producerRate, 10000); // Assume 10K message buffer
+      const timeToFailure = calculateTimeToFailure(consumerRate, producerRate, 10000);
 
       warnings.push({
         type: 'queue-growth',
@@ -254,13 +209,11 @@ export function analyzeSystem(
     }
   });
 
-  // Determine overall verdict
   let verdict: AnalysisResult['verdict'] = 'pass';
-  if (bottlenecks.some((b) => b.severity === 'high')) {
+  if (bottlenecks.some((b) => b.severity === 'high'))
     verdict = 'fail';
-  } else if (bottlenecks.length > 0 || warnings.length > 0) {
+  else if (bottlenecks.length > 0 || warnings.length > 0)
     verdict = 'risky';
-  }
 
   return {
     analysis: {
@@ -278,8 +231,6 @@ function findSyncChains(nodes: CanvasNode[], connections: Connection[]): string[
   const syncConnections = connections.filter((c) => c.type === 'sync');
   const chains: string[][] = [];
 
-  // Simple implementation: find linear sync paths
-  // In production, this would use graph traversal
   const visited = new Set<string>();
 
   syncConnections.forEach((conn) => {

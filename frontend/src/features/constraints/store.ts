@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { SystemConstraints, ScenarioPreset } from '../../../types';
+import type { SystemConstraints, ScenarioPreset } from '../../types';
 
 interface ConstraintsState {
     // Current constraints

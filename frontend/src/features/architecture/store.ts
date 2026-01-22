@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CanvasNode, Connection } from '../../../types';
+import type { CanvasNode, Connection } from '../../types';
 
 interface Viewport {
     x: number;
@@ -8,28 +8,21 @@ interface Viewport {
 }
 
 interface ArchitectureState {
-    // Graph state (domain)
     nodes: CanvasNode[];
     connections: Connection[];
 
-    // Canvas state (UI)
     viewport: Viewport;
     selectedNodeId: string | null;
     selectedConnectionId: string | null;
 
-    // Node actions
     addNode: (node: CanvasNode) => void;
     updateNode: (id: string, updates: Partial<CanvasNode>) => void;
     deleteNode: (id: string) => void;
     duplicateNode: (id: string) => void;
     setNodePosition: (id: string, position: { x: number; y: number }) => void;
-
-    // Connection actions
     addConnection: (connection: Connection) => void;
     updateConnection: (id: string, updates: Partial<Connection>) => void;
     deleteConnection: (id: string) => void;
-
-    // Canvas actions
     setViewport: (viewport: Partial<Viewport>) => void;
     setSelectedNode: (id: string | null) => void;
     setSelectedConnection: (id: string | null) => void;
@@ -47,7 +40,6 @@ const initialState = {
 export const useArchitectureStore = create<ArchitectureState>((set) => ({
     ...initialState,
 
-    // Node actions
     addNode: (node) =>
         set((state) => ({
             nodes: [...state.nodes, node],
@@ -95,7 +87,6 @@ export const useArchitectureStore = create<ArchitectureState>((set) => ({
             ),
         })),
 
-    // Connection actions
     addConnection: (connection) =>
         set((state) => ({
             connections: [...state.connections, connection],
@@ -114,7 +105,6 @@ export const useArchitectureStore = create<ArchitectureState>((set) => ({
             selectedConnectionId: state.selectedConnectionId === id ? null : state.selectedConnectionId,
         })),
 
-    // Canvas actions
     setViewport: (viewport) =>
         set((state) => ({
             viewport: { ...state.viewport, ...viewport },
