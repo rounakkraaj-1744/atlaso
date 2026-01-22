@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Search, Filter, ChevronDown, ChevronRight, Package } from 'lucide-react';
 import { useDrag } from 'react-dnd';
 import { componentRegistry, vendorNames, domainNames, dataPatternNames } from '../../features/registry/data/components';
-import { ComponentPack, Domain, Vendor, DataPattern } from '../../types/registry';
+import { ComponentPack, Domain, Vendor, DataPattern, ComponentRegistryItem } from '../../types/registry';
 import { ComponentIconRenderer } from '../canvas/ComponentIconRenderer';
 
 interface ComponentRegistryPanelProps {
@@ -20,7 +20,7 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
 
   // Filter components based on search and filters
   const filteredComponents = useMemo(() => {
-    const components = Object.values(componentRegistry);
+    const components = Object.values(componentRegistry) as ComponentRegistryItem[];
 
     return components.filter((comp) => {
       // Pack filter
@@ -32,7 +32,7 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
         const matchesSearch =
           comp.name.toLowerCase().includes(query) ||
           comp.description.toLowerCase().includes(query) ||
-          comp.tags.some(tag => tag.includes(query)) ||
+          comp.tags.some((tag) => tag.includes(query)) ||
           comp.vendor.includes(query);
         if (!matchesSearch) return false;
       }
@@ -45,7 +45,7 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
 
       // Data pattern filter
       if (selectedPatterns.size > 0) {
-        const hasPattern = comp.dataPatterns.some(p => selectedPatterns.has(p));
+        const hasPattern = comp.dataPatterns.some((p) => selectedPatterns.has(p));
         if (!hasPattern) return false;
       }
 
@@ -55,7 +55,7 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
 
   // Group by domain
   const componentsByDomain = useMemo(() => {
-    const grouped: Record<Domain, typeof filteredComponents> = {} as any;
+    const grouped: Record<Domain, ComponentRegistryItem[]> = {} as any;
     filteredComponents.forEach((comp) => {
       if (!grouped[comp.domain]) {
         grouped[comp.domain] = [];
@@ -295,7 +295,7 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
   );
 }
 
-function DraggableRegistryComponent({ component }: { component: any }) {
+function DraggableRegistryComponent({ component }: { component: ComponentRegistryItem }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'COMPONENT',
     item: { componentType: component.type },
