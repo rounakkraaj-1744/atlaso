@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { CanvasNode } from '../../types';
 import { ComponentIconRenderer } from './ComponentIconRenderer';
 import { NodeDetailPopover } from './NodeDetailPopover';
-import { componentRegistry } from '../../data/componentRegistry';
+import { componentRegistry } from '../../features/registry/data/components';
 import {
   AlertTriangle,
   CheckCircle2,

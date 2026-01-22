@@ -7,7 +7,7 @@ import { RightPanel } from './components/analysis/RightPanel';
 import { ComponentPack } from './types/registry';
 import { AnalysisResult, Suggestion } from './types';
 import { analyzeSystem } from './utils/analyzer';
-import { demoNodes, demoConnections } from './data/demoArchitecture';
+import { demoNodes, demoConnections } from './features/architecture/data/demo';
 import { Play, Save, FolderOpen, RotateCcw, Keyboard } from 'lucide-react';
 import { useArchitectureStore } from './features/architecture/store';
 import { useConstraintsStore } from './features/constraints/store';

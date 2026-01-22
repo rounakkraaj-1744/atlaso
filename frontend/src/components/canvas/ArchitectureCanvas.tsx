@@ -5,7 +5,7 @@ import { NodeConfigDrawer } from './NodeConfigDrawer';
 import { ConnectionDrawer } from './ConnectionDrawer';
 import { Minimap } from './Minimap';
 import { CanvasNode, ComponentType, Connection } from '../../types';
-import { componentRegistry } from '../../data/componentRegistry';
+import { componentRegistry } from '../../features/registry/data/components';
 import { ZoomIn, ZoomOut, Maximize2, Keyboard } from 'lucide-react';
 
 interface CanvasProps {

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Search, Filter, ChevronDown, ChevronRight, Package } from 'lucide-react';
 import { useDrag } from 'react-dnd';
-import { componentRegistry, vendorNames, domainNames, dataPatternNames } from '../../data/componentRegistry';
+import { componentRegistry, vendorNames, domainNames, dataPatternNames } from '../../features/registry/data/components';
 import { ComponentPack, Domain, Vendor, DataPattern } from '../../types/registry';
 import { ComponentIconRenderer } from '../canvas/ComponentIconRenderer';
 
