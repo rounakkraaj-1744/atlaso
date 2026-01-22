@@ -8,36 +8,36 @@ datasource db {
 }
 
 model Architecture {
-  id String @id @default(uuid())
-  name String
+  id          String  @id @default(uuid())
+  name        String
   description String
-  version Int
-  parentId String?
-  nodes Json
-  edges Json
+  version     Int
+  parentId    String?
+  nodes       Json
+  edges       Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  parent Architecture? @relation("ArchitectureVersions", fields: [parentId], references: [id])
+  parent   Architecture?  @relation("ArchitectureVersions", fields: [parentId], references: [id])
   children Architecture[] @relation("ArchitectureVersions")
 
   evaluations EvaluationRun[]
 }
 
 model ComponentDefinition {
-  id String @id @default(uuid())
-  key String @unique
-  displayName String
-  category ComponentCategory
-  vendor Vendor
+  id             String            @id @default(uuid())
+  key            String            @unique
+  displayName    String
+  category       ComponentCategory
+  vendor         Vendor
   supportedFlows DataFlowType[]
-  scalingModel ScalingModel
-  failureMode FailureMode
-  assumptions Json
-  iconPath String
-  documentation String?
-  isManaged Boolean
+  scalingModel   ScalingModel
+  failureMode    FailureMode
+  assumptions    Json
+  iconPath       String
+  documentation  String?
+  isManaged      Boolean
   isExperimental Boolean
 
   createdAt DateTime @default(now())
@@ -45,9 +45,9 @@ model ComponentDefinition {
 }
 
 model Scenario {
-  id String @id @default(uuid())
-  type ScenarioType
-  name String
+  id          String       @id @default(uuid())
+  type        ScenarioType
+  name        String
   constraints Json
 
   evaluations EvaluationRun[]
@@ -59,53 +59,53 @@ model EvaluationRun {
   id String @id @default(uuid())
 
   architectureId String
-  architecture Architecture @relation(fields: [architectureId], references: [id])
+  architecture   Architecture @relation(fields: [architectureId], references: [id])
 
-  scenarioId  String
-  scenario Scenario @relation(fields: [scenarioId], references: [id])
+  scenarioId String
+  scenario   Scenario @relation(fields: [scenarioId], references: [id])
 
-  verdict Verdict
+  verdict            Verdict
   saturationPointSec Int?
-  maxThroughPutRps Int?
+  maxThroughPutRps   Int?
 
-  bottlenecks Bottlenecks[]
+  bottlenecks  Bottlenecks[]
   explanations Explanations[]
 
   createdAt DateTime @default(now())
 }
 
 model Bottlenecks {
-  id String @id @default(uuid())
+  id              String        @id @default(uuid())
   evaluationRunId String
-  evaluationRun EvaluationRun @relation(fields: [evaluationRunId], references: [id])
-  nodeId String
-  componentKey String
-  severity Severity
-  reason String
-  metrics Json
-  orderIndex Int
-  createdAt DateTime @default(now())
+  evaluationRun   EvaluationRun @relation(fields: [evaluationRunId], references: [id])
+  nodeId          String
+  componentKey    String
+  severity        Severity
+  reason          String
+  metrics         Json
+  orderIndex      Int
+  createdAt       DateTime      @default(now())
 }
 
 model Explanations {
-  id String @id @default(uuid())
+  id              String        @id @default(uuid())
   evaluationRunId String
-  evaluationRun EvaluationRun @relation(fields: [evaluationRunId], references: [id])
-  message String
-  severity Severity
-  relatedNodeId String?
-  relatedEdgeId String?
+  evaluationRun   EvaluationRun @relation(fields: [evaluationRunId], references: [id])
+  message         String
+  severity        Severity
+  relatedNodeId   String?
+  relatedEdgeId   String?
   assumptionsUsed Json
 
   createdAt DateTime @default(now())
 }
 
 model ArchitectureComparison {
-  id String @id @default(uuid())
-  baseArchitectureId String
+  id                     String   @id @default(uuid())
+  baseArchitectureId     String
   modifiedArchitectureId String
-  deltaSummary Json
-  createdAt DateTime @default(now())
+  deltaSummary           Json
+  createdAt              DateTime @default(now())
 }
 
 enum ComponentCategory {
