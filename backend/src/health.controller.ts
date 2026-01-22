@@ -8,15 +8,16 @@ export class HealthController {
     @Get()
     async checkHealth() {
         try {
-            await this.prisma.$queryRaw`SELECT 1`;
+            // Test database connection by querying a table
+            await this.prisma.architecture.count();
 
             return {
                 status: 'ok',
                 database: 'connected',
+                message: 'Supabase PostgreSQL connection successful',
                 timestamp: new Date().toISOString(),
             };
-        }
-        catch (error) {
+        } catch (error) {
             return {
                 status: 'error',
                 database: 'disconnected',
@@ -28,19 +29,27 @@ export class HealthController {
 
     @Get('db')
     async checkDatabase() {
-        const architectureCount = await this.prisma.architecture.count();
-        const componentCount = await this.prisma.componentDefinition.count();
-        const scenarioCount = await this.prisma.scenario.count();
+        try {
+            const architectureCount = await this.prisma.architecture.count();
+            const componentCount = await this.prisma.componentDefinition.count();
+            const scenarioCount = await this.prisma.scenario.count();
 
-        return {
-            status: 'ok',
-            database: 'Supabase PostgreSQL',
-            tables: {
-                architectures: architectureCount,
-                components: componentCount,
-                scenarios: scenarioCount,
-            },
-            timestamp: new Date().toISOString(),
-        };
+            return {
+                status: 'ok',
+                database: 'Supabase PostgreSQL',
+                tables: {
+                    architectures: architectureCount,
+                    components: componentCount,
+                    scenarios: scenarioCount,
+                },
+                timestamp: new Date().toISOString(),
+            };
+        } catch (error) {
+            return {
+                status: 'error',
+                message: error.message,
+                timestamp: new Date().toISOString(),
+            };
+        }
     }
 }
