@@ -90,17 +90,11 @@ function AppContent() {
 
   const handleSave = async (name: string, description: string) => {
     try {
-      const mappedEdges = connections.map((conn) => ({
-        ...conn,
-        from: conn.sourceId,
-        to: conn.targetId,
-      }));
-
       await createArchitecture.mutateAsync({
         name,
         description,
         nodes,
-        edges: mappedEdges as Connection[],
+        edges: connections,
       });
       setShowSaveModal(false);
     } catch (error) {

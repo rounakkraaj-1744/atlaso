@@ -51,20 +51,30 @@ class ApiClient {
 
     private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
-        const response = await fetch(url, {
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
-        });
+        console.log(`[API] ${options.method || 'GET'} ${url}`);
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Request failed' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
+        try {
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers,
+                },
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ message: 'Request failed' }));
+                console.error(`[API] Error ${response.status}:`, error);
+                throw new Error(error.message || `HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(`[API] Response:`, data);
+            return data;
+        } catch (err) {
+            console.error(`[API] Request failed:`, err);
+            throw err;
         }
-
-        return response.json();
     }
 
     // Health
