@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 import { ComponentRegistryPanel } from './components/sidebar/ComponentPalette';
 import { Canvas } from './components/canvas/ArchitectureCanvas';
 import { RightPanel } from './components/analysis/RightPanel';
+import { LoadArchitectureModal, SaveArchitectureModal } from './components/modals';
 import type { ComponentPack } from './types/registry';
-import type { AnalysisResult, Suggestion } from './types';
+import type { AnalysisResult, Suggestion, CanvasNode, Connection } from './types';
 import { analyzeSystem } from './utils/analyzer';
 import { demoNodes, demoConnections } from './features/architecture/data/demo';
-import { Play, Save, FolderOpen, RotateCcw, Keyboard } from 'lucide-react';
+import { Play, Save, FolderOpen, RotateCcw, Keyboard, Upload } from 'lucide-react';
 import { useArchitectureStore } from './features/architecture/store';
 import { useConstraintsStore } from './features/constraints/store';
+import { useCreateArchitecture } from './features/architecture/hooks/useArchitectures';
+import type { Architecture } from './lib/api';
 
-export default function App() {
+function AppContent() {
   const nodes = useArchitectureStore((state) => state.nodes);
   const connections = useArchitectureStore((state) => state.connections);
   const addNode = useArchitectureStore((state) => state.addNode);
@@ -27,11 +32,16 @@ export default function App() {
   const constraints = useConstraintsStore((state) => state.constraints);
   const updateConstraints = useConstraintsStore((state) => state.updateConstraints);
 
+  const createArchitecture = useCreateArchitecture();
+
   const [enabledPacks, setEnabledPacks] = useState<Set<ComponentPack>>(
     new Set(['aws', 'gcp', 'azure', 'oss'])
   );
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showLoadModal, setShowLoadModal] = useState(false);
+  const [currentArchitectureId, setCurrentArchitectureId] = useState<string | null>(null);
 
   const handleRunAnalysis = () => {
     const result = analyzeSystem(nodes, connections, constraints);
@@ -59,12 +69,14 @@ export default function App() {
     resetCanvas();
     setAnalysis(null);
     setSuggestions([]);
+    setCurrentArchitectureId(null);
   };
 
   const handleLoadDemo = () => {
     resetCanvas();
     demoNodes.forEach((node) => addNode(node));
     demoConnections.forEach((conn) => addConnection(conn));
+    setCurrentArchitectureId(null);
   };
 
   const handleTogglePack = (pack: ComponentPack) => {
@@ -74,6 +86,48 @@ export default function App() {
     else
       newPacks.add(pack);
     setEnabledPacks(newPacks);
+  };
+
+  const handleSave = async (name: string, description: string) => {
+    try {
+      const mappedEdges = connections.map((conn) => ({
+        ...conn,
+        from: conn.sourceId,
+        to: conn.targetId,
+      }));
+
+      await createArchitecture.mutateAsync({
+        name,
+        description,
+        nodes,
+        edges: mappedEdges as Connection[],
+      });
+      setShowSaveModal(false);
+    } catch (error) {
+      console.error('Failed to save architecture:', error);
+      alert('Failed to save architecture. Is the backend running?');
+    }
+  };
+
+  const handleLoad = (architecture: Architecture) => {
+    resetCanvas();
+
+    // Load nodes
+    architecture.nodes.forEach((node: CanvasNode) => {
+      addNode(node);
+    });
+
+    // Load edges (map back to connections format)
+    architecture.edges.forEach((edge: Connection) => {
+      addConnection({
+        ...edge,
+        sourceId: edge.sourceId,
+        targetId: edge.targetId,
+      });
+    });
+
+    setCurrentArchitectureId(architecture.id);
+    setShowLoadModal(false);
   };
 
   useEffect(() => {
@@ -105,6 +159,15 @@ export default function App() {
             <div className="w-px h-8 bg-slate-700"></div>
 
             <button
+              onClick={() => setShowLoadModal(true)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
+              title="Load Saved Architecture"
+            >
+              <Upload className="w-4 h-4" />
+              Load
+            </button>
+
+            <button
               onClick={handleLoadDemo}
               className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
               title="Load Demo Architecture"
@@ -125,10 +188,13 @@ export default function App() {
             <div className="w-px h-8 bg-slate-700"></div>
 
             <button
-              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+              onClick={() => setShowSaveModal(true)}
+              disabled={nodes.length === 0}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300 disabled:opacity-50"
               title="Save Architecture"
             >
-              <Save className="w-5 h-5 text-slate-400" />
+              <Save className="w-4 h-4" />
+              Save
             </button>
 
             <button
@@ -166,6 +232,27 @@ export default function App() {
           />
         </div>
       </div>
+
+      <SaveArchitectureModal
+        isOpen={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        onSave={handleSave}
+        isLoading={createArchitecture.isPending}
+      />
+
+      <LoadArchitectureModal
+        isOpen={showLoadModal}
+        onClose={() => setShowLoadModal(false)}
+        onLoad={handleLoad}
+      />
     </DndProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 }
