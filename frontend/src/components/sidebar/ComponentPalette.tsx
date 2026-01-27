@@ -291,7 +291,7 @@ function DraggableRegistryComponent({ component }: { component: ComponentRegistr
   return (
     <div
       ref={drag as any}
-      className={`group flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-700/50 bg-slate-800/30 cursor-grab hover:bg-slate-700/40 hover:border-slate-600 transition-all ${isDragging ? 'opacity-50' : ''
+      className={`group flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-700/50 bg-slate-800/30 cursor-grab hover:bg-slate-700/40 hover:border-slate-600 transition-all select-none ${isDragging ? 'opacity-50' : ''
         }`}
       title={component.description}
     >

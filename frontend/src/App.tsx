@@ -17,6 +17,17 @@ import { useConstraintsStore } from './features/constraints/store';
 import { useCreateArchitecture } from './features/architecture/hooks/useArchitectures';
 import type { Architecture } from './lib/api';
 
+import { TouchBackend } from 'react-dnd-touch-backend';
+
+// Detect touch device
+const isTouchDevice = () => {
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+};
+
+// Select backend
+const backend = isTouchDevice() ? TouchBackend : HTML5Backend;
+const backendOptions = isTouchDevice() ? { enableMouseEvents: true } : {};
+
 function AppContent() {
   const nodes = useArchitectureStore((state) => state.nodes);
   const connections = useArchitectureStore((state) => state.connections);
@@ -142,7 +153,7 @@ function AppContent() {
   }, [nodes.length, constraints]);
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={backend} options={backendOptions}>
       <div className="h-screen flex flex-col bg-slate-950">
         <header className="h-16 bg-slate-900 border-b border-slate-700/50 flex items-center justify-between px-4 md:px-6 shrink-0 z-40 relative">
           <div className="flex items-center gap-3 md:gap-4">

@@ -333,7 +333,7 @@ export function Canvas({
                     drop(node);
                     if (node) canvasRef.current = node;
                 }}
-                className={`relative flex-1 h-full bg-slate-950 overflow-hidden ${isPanning ? 'cursor-grabbing' : 'cursor-default'
+                className={`relative flex-1 h-full bg-slate-950 overflow-hidden select-none ${isPanning ? 'cursor-grabbing' : 'cursor-default'
                     } ${isOver ? 'bg-slate-900/50' : ''} ${isConnecting ? 'cursor-crosshair' : ''}`}
                 onWheel={handleWheel}
                 onMouseDown={handleMouseDown}
