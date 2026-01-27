@@ -11,15 +11,13 @@ export class ArchitectureService {
   async create(createArchitectureDto: CreateArchitectureDto) {
     const { name, description, nodes, edges, parentId } = createArchitectureDto;
 
-    // Calculate version number
     let version = 1;
     if (parentId) {
       const parent = await this.prisma.architecture.findUnique({
         where: { id: parentId },
       });
-      if (parent) {
+      if (parent)
         version = parent.version + 1;
-      }
     }
 
     return this.prisma.architecture.create({
@@ -77,9 +75,8 @@ export class ArchitectureService {
       },
     });
 
-    if (!architecture) {
+    if (!architecture)
       throw new NotFoundException(`Architecture with ID ${id} not found`);
-    }
 
     return architecture;
   }
@@ -89,9 +86,8 @@ export class ArchitectureService {
       where: { id },
     });
 
-    if (!existing) {
+    if (!existing) 
       throw new NotFoundException(`Architecture with ID ${id} not found`);
-    }
 
     const { name, description, nodes, edges } = updateArchitectureDto;
 
@@ -125,9 +121,6 @@ export class ArchitectureService {
     });
   }
 
-  /**
-   * Fork an architecture to create a new version
-   */
   async fork(id: string, newName?: string) {
     const parent = await this.findOne(id);
 
@@ -140,15 +133,11 @@ export class ArchitectureService {
     });
   }
 
-  /**
-   * Get version history of an architecture
-   */
   async getVersionHistory(id: string) {
     const architecture = await this.findOne(id);
-
-    // Find root by traversing up
     let rootId = id;
     let current: { parentId: string | null } | null = architecture;
+
     while (current?.parentId) {
       rootId = current.parentId;
       const next = await this.prisma.architecture.findUnique({
@@ -158,7 +147,6 @@ export class ArchitectureService {
       current = next;
     }
 
-    // Get all versions
     const allVersions = await this.prisma.architecture.findMany({
       where: {
         OR: [{ id: rootId }, { parentId: rootId }],
@@ -173,7 +161,6 @@ export class ArchitectureService {
       },
     });
 
-    // Also get children of those versions
     const childrenVersions = await this.prisma.architecture.findMany({
       where: {
         parentId: { in: allVersions.map((v) => v.id) },

@@ -1,16 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../shared/database';
 import type { CanvasNode, Connection } from '../../shared/types';
-
 export interface DiffResult {
     addedNodes: string[];
     removedNodes: string[];
     modifiedNodes: string[];
     addedConnections: string[];
     removedConnections: string[];
-    [key: string]: string[]; // Index signature for JSON compatibility
+    [key: string]: string[];
 }
-
 export interface ComparisonMetrics {
     bottlenecksBefore: number;
     bottlenecksAfter: number;
@@ -18,33 +16,29 @@ export interface ComparisonMetrics {
     warningsAfter: number;
     verdictBefore: string;
     verdictAfter: string;
-    [key: string]: number | string; // Index signature for JSON compatibility
+    [key: string]: number | string;
 }
-
 @Injectable()
 export class ComparisonService {
     constructor(private readonly prisma: PrismaService) { }
 
-    /**
-     * Compare two architectures
-     */
     async compare(baseId: string, modifiedId: string) {
         const [base, modified] = await Promise.all([
             this.prisma.architecture.findUnique({ where: { id: baseId } }),
             this.prisma.architecture.findUnique({ where: { id: modifiedId } }),
         ]);
 
-        if (!base) throw new NotFoundException(`Architecture ${baseId} not found`);
-        if (!modified) throw new NotFoundException(`Architecture ${modifiedId} not found`);
+        if (!base)
+            throw new NotFoundException(`Architecture ${baseId} not found`);
+        if (!modified)
+            throw new NotFoundException(`Architecture ${modifiedId} not found`);
 
         const baseNodes = base.nodes as unknown as CanvasNode[];
         const modifiedNodesData = modified.nodes as unknown as CanvasNode[];
         const baseEdges = base.edges as unknown as Connection[];
         const modifiedEdges = modified.edges as unknown as Connection[];
-
         const diff = this.calculateDiff(baseNodes, modifiedNodesData, baseEdges, modifiedEdges);
 
-        // Get latest evaluations for metrics comparison
         const [baseEval, modifiedEval] = await Promise.all([
             this.prisma.evaluationRun.findFirst({
                 where: { architectureId: baseId },
@@ -67,7 +61,6 @@ export class ComparisonService {
             verdictAfter: modifiedEval?.verdict || 'UNKNOWN',
         };
 
-        // Persist comparison
         const comparison = await this.prisma.architectureComparison.create({
             data: {
                 baseArchitectureId: baseId,
@@ -86,26 +79,15 @@ export class ComparisonService {
         };
     }
 
-    /**
-     * Calculate diff between two architectures
-     */
-    private calculateDiff(
-        baseNodes: CanvasNode[],
-        targetNodes: CanvasNode[],
-        baseEdges: Connection[],
-        targetEdges: Connection[],
-    ): DiffResult {
+    private calculateDiff( baseNodes: CanvasNode[], targetNodes: CanvasNode[], baseEdges: Connection[], targetEdges: Connection[] ): DiffResult {
         const baseNodeIds = new Set(baseNodes.map((n) => n.id));
         const targetNodeIds = new Set(targetNodes.map((n) => n.id));
         const baseEdgeIds = new Set(baseEdges.map((e) => e.id));
         const targetEdgeIds = new Set(targetEdges.map((e) => e.id));
-
-        // Node changes
         const addedNodes = [...targetNodeIds].filter((id) => !baseNodeIds.has(id));
         const removedNodes = [...baseNodeIds].filter((id) => !targetNodeIds.has(id));
         const changedNodes: string[] = [];
 
-        // Check for modifications in common nodes
         baseNodes.forEach((baseNode) => {
             const targetNode = targetNodes.find((n) => n.id === baseNode.id);
             if (targetNode) {
@@ -113,13 +95,12 @@ export class ComparisonService {
                     baseNode.config.throughput !== targetNode.config.throughput ||
                     baseNode.config.latency !== targetNode.config.latency ||
                     baseNode.config.scalingFactor !== targetNode.config.scalingFactor;
-                if (hasConfigChange) {
+
+                if (hasConfigChange) 
                     changedNodes.push(baseNode.id);
-                }
             }
         });
 
-        // Edge changes
         const addedConnections = [...targetEdgeIds].filter((id) => !baseEdgeIds.has(id));
         const removedConnections = [...baseEdgeIds].filter((id) => !targetEdgeIds.has(id));
 
@@ -132,24 +113,17 @@ export class ComparisonService {
         };
     }
 
-    /**
-     * Get comparison by ID
-     */
     async findOne(id: string) {
         const comparison = await this.prisma.architectureComparison.findUnique({
             where: { id },
         });
 
-        if (!comparison) {
+        if (!comparison)
             throw new NotFoundException(`Comparison ${id} not found`);
-        }
 
         return comparison;
     }
 
-    /**
-     * Get all comparisons
-     */
     async findAll(page = 1, limit = 10) {
         const skip = (page - 1) * limit;
 

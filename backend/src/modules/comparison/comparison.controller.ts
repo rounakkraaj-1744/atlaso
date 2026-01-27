@@ -1,20 +1,10 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Param,
-    Query,
-    ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, ParseUUIDPipe }from '@nestjs/common';
 import { ComparisonService } from './comparison.service';
 import { createSuccessResponse } from '../../shared/dto';
-
 class CompareDto {
     baseId: string;
     modifiedId: string;
 }
-
 @Controller('comparisons')
 export class ComparisonController {
     constructor(private readonly comparisonService: ComparisonService) { }
@@ -26,10 +16,7 @@ export class ComparisonController {
     }
 
     @Get()
-    async findAll(
-        @Query('page') page?: string,
-        @Query('limit') limit?: string,
-    ) {
+    async findAll( @Query('page') page?: string, @Query('limit') limit?: string ) {
         const result = await this.comparisonService.findAll(
             page ? parseInt(page, 10) : 1,
             limit ? parseInt(limit, 10) : 10,

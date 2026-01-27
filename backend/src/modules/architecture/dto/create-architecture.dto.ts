@@ -1,17 +1,6 @@
-import {
-    IsString,
-    IsNotEmpty,
-    IsArray,
-    IsOptional,
-    ValidateNested,
-    IsNumber,
-    IsEnum,
-    Min,
-    IsBoolean,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, IsOptional, ValidateNested, IsNumber, IsEnum, Min, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
-// Node Position DTO
 class PositionDto {
     @IsNumber()
     x: number;
@@ -20,7 +9,6 @@ class PositionDto {
     y: number;
 }
 
-// Node Config DTO
 class NodeConfigDto {
     @IsString()
     @IsNotEmpty()
@@ -46,7 +34,6 @@ class NodeConfigDto {
     notes?: string;
 }
 
-// Canvas Node DTO
 class CanvasNodeDto {
     @IsString()
     @IsNotEmpty()
@@ -69,7 +56,6 @@ class CanvasNodeDto {
     status?: string;
 }
 
-// Connection DTO
 class ConnectionDto {
     @IsString()
     @IsNotEmpty()

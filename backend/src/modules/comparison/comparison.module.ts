@@ -7,4 +7,4 @@ import { ComparisonController } from './comparison.controller';
     providers: [ComparisonService],
     exports: [ComparisonService],
 })
-export class ComparisonModule { }
+export class ComparisonModule {}

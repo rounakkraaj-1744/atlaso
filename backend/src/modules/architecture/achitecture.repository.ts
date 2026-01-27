@@ -1,7 +1,3 @@
-/**
- * Architecture Repository - Data access layer for architectures
- * Note: This is a thin abstraction over Prisma for potential future caching
- */
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../shared/database';
@@ -9,26 +5,19 @@ import type { CanvasNode, Connection } from '../../shared/types';
 
 @Injectable()
 export class ArchitectureRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
-    /**
-     * Find architecture by ID
-     */
     async findById(id: string) {
         const architecture = await this.prisma.architecture.findUnique({
             where: { id },
         });
 
-        if (!architecture) {
+        if (!architecture)
             throw new NotFoundException(`Architecture with ID ${id} not found`);
-        }
 
         return architecture;
     }
 
-    /**
-     * Find architecture with evaluations
-     */
     async findByIdWithEvaluations(id: string) {
         const architecture = await this.prisma.architecture.findUnique({
             where: { id },
@@ -47,9 +36,6 @@ export class ArchitectureRepository {
         return architecture;
     }
 
-    /**
-     * Find all architectures with pagination
-     */
     async findAll(page = 1, limit = 20) {
         const skip = (page - 1) * limit;
 
@@ -74,17 +60,7 @@ export class ArchitectureRepository {
         return { data, total };
     }
 
-    /**
-     * Create a new architecture
-     */
-    async create(data: {
-        name: string;
-        description: string;
-        nodes: CanvasNode[];
-        edges: Connection[];
-        version?: number;
-        parentId?: string | null;
-    }) {
+    async create(data: { name: string; description: string; nodes: CanvasNode[]; edges: Connection[]; version?: number; parentId?: string | null; }) {
         return this.prisma.architecture.create({
             data: {
                 name: data.name,
@@ -97,18 +73,7 @@ export class ArchitectureRepository {
         });
     }
 
-    /**
-     * Update an architecture
-     */
-    async update(
-        id: string,
-        data: Partial<{
-            name: string;
-            description: string;
-            nodes: CanvasNode[];
-            edges: Connection[];
-        }>,
-    ) {
+    async update( id: string, data: Partial<{ name: string; description: string; nodes: CanvasNode[]; edges: Connection[]; }> ) {
         await this.findById(id);
 
         return this.prisma.architecture.update({
@@ -122,15 +87,13 @@ export class ArchitectureRepository {
         });
     }
 
-    /**
-     * Delete an architecture and related data
-     */
     async delete(id: string) {
         await this.findById(id);
 
-        // Delete related evaluations first
         await this.prisma.evaluationRun.deleteMany({
-            where: { architectureId: id },
+            where: {
+                architectureId: id
+            }
         });
 
         return this.prisma.architecture.delete({
@@ -138,9 +101,6 @@ export class ArchitectureRepository {
         });
     }
 
-    /**
-     * Check if architecture exists
-     */
     async exists(id: string): Promise<boolean> {
         const count = await this.prisma.architecture.count({
             where: { id },
@@ -148,9 +108,6 @@ export class ArchitectureRepository {
         return count > 0;
     }
 
-    /**
-     * Find children (forked versions)
-     */
     async findChildren(parentId: string) {
         return this.prisma.architecture.findMany({
             where: { parentId },

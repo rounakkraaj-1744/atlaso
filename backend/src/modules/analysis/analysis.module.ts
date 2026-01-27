@@ -7,4 +7,4 @@ import { EvaluationModule } from '../evaluation/evaluation.module';
     providers: [AnalysisService],
     exports: [AnalysisService],
 })
-export class AnalysisModule { }
+export class AnalysisModule {}
