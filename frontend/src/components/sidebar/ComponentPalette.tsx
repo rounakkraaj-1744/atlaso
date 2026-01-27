@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, ChevronDown, ChevronRight, Package } from 'lucide-react';
 import { useDrag } from 'react-dnd';
 import { componentRegistry, vendorNames, domainNames, dataPatternNames } from '../../features/registry/data/components';
@@ -109,9 +110,9 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
   const activeFilterCount = selectedVendors.size + selectedDomains.size + selectedPatterns.size;
 
   return (
-    <div className="h-full bg-slate-900 border-r border-slate-700/50 flex flex-col">
-      <div className="p-3 border-b border-slate-700/50">
-        <h2 className="text-xs font-semibold text-slate-300 uppercase tracking-wide mb-2">
+    <div className="h-full bg-transparent border-r border-white/5 flex flex-col">
+      <div className="p-3 border-b border-white/5">
+        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
           Component Registry
         </h2>
 
@@ -122,19 +123,19 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-2 py-1.5 bg-slate-800 border border-slate-700 rounded-md text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-8 pr-2 py-1.5 bg-black/20 border border-white/10 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
           />
         </div>
 
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-between px-2 py-1.5 bg-slate-800 border border-slate-700 rounded-md text-xs text-slate-300 hover:bg-slate-700 transition-colors"
+          className="w-full flex items-center justify-between px-2 py-1.5 bg-black/10 border border-white/5 rounded-lg text-xs text-slate-300 hover:bg-white/5 transition-colors"
         >
           <span className="flex items-center gap-2">
             <Filter className="w-3.5 h-3.5" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="px-1 py-0.5 bg-blue-500 text-white text-[10px] rounded">
+              <span className="px-1 py-0.5 bg-blue-500/20 text-blue-300 text-[10px] rounded font-mono">
                 {activeFilterCount}
               </span>
             )}
@@ -143,17 +144,22 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
         </button>
 
         {showFilters && (
-          <div className="mt-2 p-2 bg-slate-800 border border-slate-700 rounded-md space-y-2">
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-2 p-2 bg-black/20 border border-white/5 rounded-lg space-y-2"
+          >
             <div>
-              <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-1">Vendor</div>
+              <div className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1">Vendor</div>
               <div className="flex flex-wrap gap-1">
                 {(['aws', 'gcp', 'azure', 'oss'] as Vendor[]).map((vendor) => (
                   <button
                     key={vendor}
                     onClick={() => toggleVendor(vendor)}
                     className={`px-1.5 py-0.5 text-[10px] rounded transition-colors ${selectedVendors.has(vendor)
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-white/5 text-slate-400 hover:bg-white/10'
                       }`}
                   >
                     {vendorNames[vendor]}
@@ -163,15 +169,15 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
             </div>
 
             <div>
-              <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-1">Domain</div>
+              <div className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1">Domain</div>
               <div className="flex flex-wrap gap-1">
                 {(['compute', 'storage', 'messaging', 'networking'] as Domain[]).map((domain) => (
                   <button
                     key={domain}
                     onClick={() => toggleDomainFilter(domain)}
                     className={`px-1.5 py-0.5 text-[10px] rounded transition-colors ${selectedDomains.has(domain)
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-white/5 text-slate-400 hover:bg-white/10'
                       }`}
                   >
                     {domainNames[domain]}
@@ -181,15 +187,15 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
             </div>
 
             <div>
-              <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-1">Pattern</div>
+              <div className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1">Pattern</div>
               <div className="flex flex-wrap gap-1">
                 {(['sync', 'async', 'stream'] as DataPattern[]).map((pattern) => (
                   <button
                     key={pattern}
                     onClick={() => togglePattern(pattern)}
                     className={`px-1.5 py-0.5 text-[10px] rounded transition-colors ${selectedPatterns.has(pattern)
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-white/5 text-slate-400 hover:bg-white/10'
                       }`}
                   >
                     {dataPatternNames[pattern]}
@@ -206,12 +212,12 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
                 Clear all filters
               </button>
             )}
-          </div>
+          </motion.div>
         )}
       </div>
 
-      <div className="px-3 py-2 border-b border-slate-700/50">
-        <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-1.5 flex items-center gap-2">
+      <div className="px-3 py-2 border-b border-white/5">
+        <div className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1.5 flex items-center gap-2">
           <Package className="w-3 h-3" />
           Component Packs
         </div>
@@ -222,9 +228,9 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
                 type="checkbox"
                 checked={enabledPacks.has(pack)}
                 onChange={() => onTogglePack(pack)}
-                className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-blue-600 focus:ring-2 focus:ring-blue-500/50"
               />
-              <span className="text-xs text-slate-300 group-hover:text-slate-200 transition-colors">
+              <span className="text-xs text-slate-400 group-hover:text-slate-200 transition-colors">
                 {pack === 'aws' && 'AWS'}
                 {pack === 'gcp' && 'Google Cloud'}
                 {pack === 'azure' && 'Microsoft Azure'}
@@ -237,7 +243,7 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
 
       <div className="flex-1 overflow-y-auto p-2">
         {Object.keys(componentsByDomain).length === 0 ? (
-          <div className="text-center py-8 text-slate-500 text-xs">
+          <div className="text-center py-8 text-slate-600 text-xs">
             No components found
           </div>
         ) : (
@@ -257,21 +263,28 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
                   <span className="text-[10px] text-slate-600">({components.length})</span>
                 </button>
 
-                {expandedDomains.has(domain as Domain) && (
-                  <div className="space-y-1 pl-1 mt-0.5">
-                    {components.map((comp) => (
-                      <DraggableRegistryComponent key={comp.type} component={comp} />
-                    ))}
-                  </div>
-                )}
+                <AnimatePresence>
+                  {expandedDomains.has(domain as Domain) && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="space-y-1 pl-1 mt-0.5 overflow-hidden"
+                    >
+                      {components.map((comp) => (
+                        <DraggableRegistryComponent key={comp.type} component={comp} />
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <div className="px-3 py-2 border-t border-slate-700/50">
-        <div className="text-[10px] text-slate-500">
+      <div className="px-3 py-2 border-t border-white/5">
+        <div className="text-[10px] text-slate-600">
           {filteredComponents.length} components loaded
         </div>
       </div>
@@ -291,7 +304,7 @@ function DraggableRegistryComponent({ component }: { component: ComponentRegistr
   return (
     <div
       ref={drag as any}
-      className={`group flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-700/50 bg-slate-800/30 cursor-grab hover:bg-slate-700/40 hover:border-slate-600 transition-all select-none ${isDragging ? 'opacity-50' : ''
+      className={`group flex items-start gap-2.5 p-2.5 rounded-lg border border-white/5 bg-white/5 cursor-grab hover:bg-white/10 hover:border-white/20 transition-all select-none ${isDragging ? 'opacity-50' : ''
         }`}
       title={component.description}
     >
@@ -302,7 +315,7 @@ function DraggableRegistryComponent({ component }: { component: ComponentRegistr
         <div className="flex items-center gap-1.5 mb-0.5">
           <div className="text-sm text-slate-200 font-medium truncate">{component.name}</div>
           {component.isManaged && (
-            <span className="px-1 py-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] rounded uppercase tracking-wide">
+            <span className="px-1 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] rounded uppercase tracking-wide">
               Managed
             </span>
           )}
@@ -312,7 +325,7 @@ function DraggableRegistryComponent({ component }: { component: ComponentRegistr
           {component.dataPatterns.slice(0, 2).map((pattern: string) => (
             <span
               key={pattern}
-              className="px-1.5 py-0.5 bg-slate-700/50 text-slate-400 text-[10px] rounded"
+              className="px-1.5 py-0.5 bg-black/20 text-slate-400 text-[10px] rounded border border-white/5"
             >
               {pattern}
             </span>

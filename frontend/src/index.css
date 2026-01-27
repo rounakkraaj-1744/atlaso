@@ -1,40 +1,48 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import './styles/themes.css';
-
 @import "tailwindcss";
 
-* {
-  border-color: #2d3344;
+@layer base {
+  * {
+    @apply border-white/5;
+  }
+
+  body {
+    background-color: #030712;
+    /* darker than slate-950 */
+    color: #f0f2f5;
+    font-family: Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    /* Noise Texture Overlay */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  /* Typography Polish */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tight;
+  }
 }
 
-body {
-  background-color: #0f1117;
-  color: #f0f2f5;
-  font-family: Inter, system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+@layer utilities {
+  .panel-glass {
+    @apply bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  .card-glass {
+    @apply bg-black/20 backdrop-blur-md border border-white/5 shadow-lg;
+  }
 }
 
-#root {
-  width: 100vw;
-  height: 100vh;
-}
-
-.panel {
-  background-color: #1a1d27;
-  border: 1px solid #2d3344;
-}
-
-.card {
-  background-color: #252a37;
-  border: 1px solid #2d3344;
-  border-radius: 0.5rem;
-}
-
-/* Custom Scrollbar */
+/* Custom Scrollbar Polish */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -45,12 +53,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 ::-webkit-scrollbar-corner {

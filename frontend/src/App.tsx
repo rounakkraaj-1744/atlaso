@@ -156,18 +156,24 @@ function AppContent() {
 
   return (
     <DndProvider backend={backend} options={backendOptions}>
-      <div className="h-screen flex flex-col bg-slate-950">
-        <header className="h-16 bg-slate-900 border-b border-slate-700/50 flex items-center justify-between px-4 md:px-6 shrink-0 z-40 relative">
+      <div className="h-screen flex flex-col bg-transparent">
+        {/* Ambient Glow */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/5 blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/5 blur-[120px]" />
+        </div>
+
+        <header className="h-16 bg-slate-900/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 md:px-6 shrink-0 z-40 relative">
           <div className="flex items-center gap-3 md:gap-4">
             <button
-              className="md:hidden p-2 -ml-2 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition-colors"
+              className="md:hidden p-2 -ml-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
               onClick={() => setIsLeftPanelOpen(!isLeftPanelOpen)}
             >
               <Menu className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-slate-100">Atlaso</h1>
-              <p className="text-xs text-slate-500 hidden sm:block">Distributed System Design & Constraint Analyzer</p>
+              <h1 className="text-xl font-bold text-white tracking-tight">Atlaso</h1>
+              <p className="text-xs text-slate-500 hidden sm:block tracking-wide">Distributed System Design Studio</p>
             </div>
           </div>
 
@@ -175,19 +181,19 @@ function AppContent() {
             <button
               onClick={handleRunAnalysis}
               disabled={nodes.length === 0}
-              className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 rounded-lg text-white text-xs md:text-sm font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              className="group flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 rounded-lg text-white text-xs md:text-sm font-medium hover:bg-blue-500 transition-all shadow-[0_0_20px_-5px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_-5px_rgba(37,99,235,0.5)] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap disabled:shadow-none"
             >
-              <Play className="w-3 h-3 md:w-4 md:h-4" />
+              <Play className="w-3 h-3 md:w-4 md:h-4 fill-current opacity-90 group-hover:scale-110 transition-transform" />
               <span className="hidden sm:inline">Run Analysis</span>
               <span className="sm:hidden">Run</span>
             </button>
 
-            <div className="w-px h-6 md:h-8 bg-slate-700 mx-1"></div>
+            <div className="w-px h-6 md:h-8 bg-white/10 mx-1"></div>
 
             <div className="hidden md:flex items-center gap-3">
               <button
                 onClick={() => setShowLoadModal(true)}
-                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
+                className="flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors text-sm text-slate-400 hover:text-slate-200"
                 title="Load Saved Architecture"
               >
                 <Upload className="w-4 h-4" />
@@ -196,7 +202,7 @@ function AppContent() {
 
               <button
                 onClick={handleLoadDemo}
-                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
+                className="flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors text-sm text-slate-400 hover:text-slate-200"
                 title="Load Demo Architecture"
               >
                 <FolderOpen className="w-4 h-4" />
@@ -205,19 +211,19 @@ function AppContent() {
 
               <button
                 onClick={handleReset}
-                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
+                className="flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors text-sm text-slate-400 hover:text-slate-200"
                 title="Reset Canvas"
               >
                 <RotateCcw className="w-4 h-4" />
                 Reset
               </button>
 
-              <div className="w-px h-8 bg-slate-700"></div>
+              <div className="w-px h-8 bg-white/10"></div>
 
               <button
                 onClick={() => setShowSaveModal(true)}
                 disabled={nodes.length === 0}
-                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300 disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors text-sm text-slate-400 hover:text-slate-200 disabled:opacity-50"
                 title="Save Architecture"
               >
                 <Save className="w-4 h-4" />
@@ -229,21 +235,21 @@ function AppContent() {
             <div className="flex md:hidden items-center gap-1">
               <button
                 onClick={() => setShowLoadModal(true)}
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300"
+                className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-slate-200"
               >
                 <Upload className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setShowSaveModal(true)}
                 disabled={nodes.length === 0}
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 disabled:opacity-50"
+                className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-slate-200 disabled:opacity-50"
               >
                 <Save className="w-5 h-5" />
               </button>
             </div>
 
             <button
-              className="md:hidden p-2 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition-colors"
+              className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
               onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
             >
               <PanelRight className="w-5 h-5" />
@@ -251,7 +257,7 @@ function AppContent() {
           </div>
         </header>
 
-        <div className="flex-1 flex overflow-hidden relative">
+        <div className="flex-1 flex overflow-hidden relative z-10">
           {/* Left Panel - Mobile Drawer & Desktop Sidebar */}
           <AnimatePresence mode="wait">
             {(isLeftPanelOpen || window.innerWidth >= 768) && (
@@ -261,7 +267,7 @@ function AppContent() {
                 exit={{ x: -300, opacity: 0 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 className={`
-                  fixed inset-y-0 left-0 z-30 w-72 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 pt-16 md:pt-0
+                  fixed inset-y-0 left-0 z-30 w-72 bg-slate-900/90 backdrop-blur-xl border-r border-white/5 pt-16 md:pt-0
                   md:relative md:translate-x-0 md:inset-auto md:w-72
                   ${isLeftPanelOpen ? 'block' : 'hidden md:block'}
                 `}
@@ -318,7 +324,7 @@ function AppContent() {
                 exit={{ x: 300, opacity: 0 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 className={`
-                  fixed inset-y-0 right-0 z-30 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-slate-700/50 pt-16 md:pt-0
+                  fixed inset-y-0 right-0 z-30 w-80 bg-slate-900/90 backdrop-blur-xl border-l border-white/5 pt-16 md:pt-0
                   md:relative md:translate-x-0 md:inset-auto md:w-80
                   ${isRightPanelOpen ? 'block' : 'hidden md:block'}
                 `}
