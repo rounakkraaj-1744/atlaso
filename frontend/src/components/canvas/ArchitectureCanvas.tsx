@@ -417,31 +417,31 @@ export function Canvas({
 
                 {nodes.length === 0 && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="text-center space-y-3">
-                            <div className="text-slate-600 text-lg">Drag components from the left palette</div>
-                            <div className="text-slate-700 text-sm">
+                        <div className="text-center space-y-2">
+                            <div className="text-slate-600 text-base font-medium">Drag components from the left palette</div>
+                            <div className="text-slate-700 text-xs">
                                 Click right port to connect • Shift + Drag to pan • Scroll to zoom
                             </div>
                         </div>
                     </div>
                 )}
 
-                <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg">
-                    <span className="text-xs font-mono text-slate-400">{Math.round(scale * 100)}%</span>
+                <div className="absolute bottom-4 right-4 px-2 py-1 bg-slate-800 border border-slate-700 rounded-md">
+                    <span className="text-[10px] font-mono text-slate-400">{Math.round(scale * 100)}%</span>
                 </div>
 
                 {connections.length > 0 && (
-                    <div className="absolute bottom-4 left-4 p-3 bg-slate-800 border border-slate-700 rounded-lg space-y-2">
-                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                    <div className="absolute bottom-4 left-4 p-2 bg-slate-800 border border-slate-700 rounded-md space-y-1.5">
+                        <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">
                             Connections
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-0.5 bg-purple-500"></div>
-                            <span className="text-xs text-slate-400">Synchronous</span>
+                            <div className="w-6 h-0.5 bg-purple-500"></div>
+                            <span className="text-[10px] text-slate-400">Synchronous</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-0.5 bg-blue-500 border-dashed" style={{ borderTopWidth: '2px', borderTopStyle: 'dashed' }}></div>
-                            <span className="text-xs text-slate-400">Asynchronous</span>
+                            <div className="w-6 h-0.5 bg-blue-500 border-dashed" style={{ borderTopWidth: '2px', borderTopStyle: 'dashed' }}></div>
+                            <span className="text-[10px] text-slate-400">Asynchronous</span>
                         </div>
                     </div>
                 )}

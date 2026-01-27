@@ -23,7 +23,7 @@ export function ConstraintsTab({ constraints, onConstraintsChange }: Constraints
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Scenario Selector */}
             <ScenarioSelector
                 currentScenario={currentScenario}
@@ -31,17 +31,17 @@ export function ConstraintsTab({ constraints, onConstraintsChange }: Constraints
                 currentConstraints={constraints}
             />
 
-            <div className="border-t border-border pt-6">
+            <div className="border-t border-border pt-4">
                 <div>
-                    <h3 className="text-sm font-semibold text-text-primary mb-1">
+                    <h3 className="text-xs font-semibold text-text-primary mb-1">
                         System Constraints
                     </h3>
-                    <p className="text-xs text-text-secondary">
+                    <p className="text-[10px] text-text-secondary">
                         Define expected load and performance requirements
                     </p>
                 </div>
 
-                <div className="space-y-4 mt-4">
+                <div className="space-y-3 mt-3">
                     <Input
                         label="Average RPS"
                         type="number"

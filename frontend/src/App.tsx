@@ -252,8 +252,8 @@ function AppContent() {
         <div className="flex-1 flex overflow-hidden relative">
           {/* Left Panel - Mobile Drawer & Desktop Sidebar */}
           <div className={`
-            fixed inset-y-0 left-0 z-30 w-80 transform transition-transform duration-300 ease-in-out bg-slate-900 border-r border-slate-700/50 pt-16 md:pt-0
-            md:relative md:translate-x-0 md:inset-auto md:w-80
+            fixed inset-y-0 left-0 z-30 w-72 transform transition-transform duration-300 ease-in-out bg-slate-900 border-r border-slate-700/50 pt-16 md:pt-0
+            md:relative md:translate-x-0 md:inset-auto md:w-72
             ${isLeftPanelOpen ? 'translate-x-0' : '-translate-x-full'}
           `}>
             <div className="h-full flex flex-col relative">
@@ -296,8 +296,8 @@ function AppContent() {
 
           {/* Right Panel - Mobile Drawer & Desktop Sidebar */}
           <div className={`
-            fixed inset-y-0 right-0 z-30 w-96 transform transition-transform duration-300 ease-in-out bg-slate-900 border-l border-slate-700/50 pt-16 md:pt-0
-            md:relative md:translate-x-0 md:inset-auto md:w-96
+            fixed inset-y-0 right-0 z-30 w-80 transform transition-transform duration-300 ease-in-out bg-slate-900 border-l border-slate-700/50 pt-16 md:pt-0
+            md:relative md:translate-x-0 md:inset-auto md:w-80
             ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}
           `}>
             <div className="h-full flex flex-col relative">
