@@ -1,34 +1,46 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { RegistryService } from './registry.service';
-import { CreateRegistryDto } from './dto/create-registry.dto';
-import { UpdateRegistryDto } from './dto/update-registry.dto';
+import { createSuccessResponse } from '../../shared/dto';
 
 @Controller('registry')
 export class RegistryController {
-  constructor(private readonly registryService: RegistryService) {}
+  constructor(private readonly registryService: RegistryService) { }
 
-  @Post()
-  create(@Body() createRegistryDto: CreateRegistryDto) {
-    return this.registryService.create(createRegistryDto);
+  @Get('components')
+  async findAll(
+    @Query('category') category?: string,
+    @Query('vendor') vendor?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const result = await this.registryService.findAll({
+      category,
+      vendor,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 50,
+    });
+    return {
+      success: true,
+      ...result,
+      timestamp: new Date().toISOString(),
+    };
   }
 
-  @Get()
-  findAll() {
-    return this.registryService.findAll();
+  @Get('components/:key')
+  async findByKey(@Param('key') key: string) {
+    const component = await this.registryService.findByKey(key);
+    return createSuccessResponse(component);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.registryService.findOne(+id);
+  @Get('categories')
+  getCategories() {
+    const categories = this.registryService.getCategories();
+    return createSuccessResponse(categories);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRegistryDto: UpdateRegistryDto) {
-    return this.registryService.update(+id, updateRegistryDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.registryService.remove(+id);
+  @Get('seed')
+  async seed() {
+    await this.registryService.seedComponents();
+    return createSuccessResponse(null, 'Components seeded successfully');
   }
 }
