@@ -1,7 +1,3 @@
-/**
- * Database Heuristics - Scaling and performance patterns for databases
- */
-
 export interface DbHeuristic {
     type: 'postgresql' | 'mongodb';
     connectionPoolDefault: number;
@@ -27,25 +23,15 @@ export const dbHeuristics: Record<string, DbHeuristic> = {
     },
 };
 
-/**
- * Calculate recommended connection pool size
- */
-export function recommendedPoolSize(
-    avgRPS: number,
-    avgLatencyMs: number,
-): number {
-    // Connections = RPS * (Latency / 1000)
+// recommend connection pool size
+export function recommendedPoolSize( avgRPS: number, avgLatencyMs: number ): number {
+    // connections = RPS * (Latency / 1000)
     const needed = Math.ceil(avgRPS * (avgLatencyMs / 1000));
     return Math.min(Math.max(needed, 10), 500);
 }
 
-/**
- * Calculate expected throughput for database
- */
-export function dbThroughput(
-    connectionPool: number,
-    avgLatencyMs: number,
-): number {
-    // Throughput = Pool Size / (Latency / 1000)
+// calculate expected throughput for the database
+export function dbThroughput( connectionPool: number, avgLatencyMs: number ): number {
+    // throughput = pool size / (latency / 1000)
     return Math.floor(connectionPool / (avgLatencyMs / 1000));
 }

@@ -1,7 +1,3 @@
-/**
- * Kafka Heuristics - Partitioning and throughput patterns
- */
-
 export interface KafkaHeuristic {
     defaultPartitions: number;
     messagesPerPartitionPerSec: number;
@@ -16,9 +12,7 @@ export const kafkaHeuristics: KafkaHeuristic = {
     retentionHours: 168, // 7 days
 };
 
-/**
- * Calculate recommended partitions for target throughput
- */
+// calculate recommendPartitions for target throughput
 export function recommendedPartitions(targetRPS: number): number {
     const partitions = Math.ceil(
         targetRPS / kafkaHeuristics.messagesPerPartitionPerSec,
@@ -27,31 +21,17 @@ export function recommendedPartitions(targetRPS: number): number {
     return Math.pow(2, Math.ceil(Math.log2(Math.max(partitions, 1))));
 }
 
-/**
- * Calculate consumer group throughput
- */
-export function consumerGroupThroughput(
-    consumers: number,
-    partitions: number,
-    processingLatencyMs: number,
-): number {
-    // Each consumer can handle multiple partitions
+// calculate consumer group throughput
+export function consumerGroupThroughput( consumers: number, partitions: number, processingLatencyMs: number ): number {
+    // each consumer can handle multiple partitions
     const activeConsumers = Math.min(consumers, partitions);
     const perConsumerTPS = 1000 / processingLatencyMs;
     return Math.floor(activeConsumers * perConsumerTPS);
 }
 
-/**
- * Calculate consumer lag time
- */
-export function estimateLagTime(
-    producerRate: number,
-    consumerRate: number,
-    currentLag: number,
-): number {
-    if (consumerRate >= producerRate) {
+ // calculation of consumer lag time
+export function estimateLagTime( producerRate: number, consumerRate: number, currentLag: number ): number {
+    if (consumerRate >= producerRate)
         return currentLag / consumerRate;
-    }
-    // Lag grows unbounded
     return Infinity;
 }
