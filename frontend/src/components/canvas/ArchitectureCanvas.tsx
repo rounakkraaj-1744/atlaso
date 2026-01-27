@@ -178,8 +178,12 @@ export function Canvas({
         setScale((prev) => Math.min(Math.max(prev * delta, 0.25), 2));
     }, []);
 
+    const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
+    const lastDistRef = useRef<number | null>(null);
+
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+        // Allow pan with left click (if on background) or middle click or shift+click
+        if (e.button === 0 || e.button === 1) {
             setIsPanning(true);
             setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
         }
@@ -193,6 +197,48 @@ export function Canvas({
 
     const handleMouseUp = useCallback(() => {
         setIsPanning(false);
+    }, []);
+
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+            setIsPanning(true);
+        } else if (e.touches.length === 2) {
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            lastDistRef.current = dist;
+        }
+    }, []);
+
+    const handleTouchMove = useCallback((e: React.TouchEvent) => {
+        // Prevent default only if we are interacting with canvas to avoid blocking scroll elsewhere if needed
+        // But here we want to block scroll
+        // e.preventDefault(); 
+
+        if (e.touches.length === 1 && isPanning && lastTouchRef.current) {
+            const touch = e.touches[0];
+            const dx = touch.clientX - lastTouchRef.current.x;
+            const dy = touch.clientY - lastTouchRef.current.y;
+            setPan(p => ({ x: p.x + dx, y: p.y + dy }));
+            lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+        } else if (e.touches.length === 2 && lastDistRef.current) {
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            const delta = dist / lastDistRef.current;
+            setScale(s => Math.min(Math.max(s * delta, 0.25), 2));
+            lastDistRef.current = dist;
+        }
+    }, [isPanning]);
+
+    const handleTouchEnd = useCallback(() => {
+        setIsPanning(false);
+        lastTouchRef.current = null;
+        lastDistRef.current = null;
     }, []);
 
     const handleZoomIn = () => setScale((prev) => Math.min(prev * 1.2, 2));
@@ -294,6 +340,9 @@ export function Canvas({
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
                 onClick={handleCanvasClick}
             >
                 <div

@@ -11,7 +11,7 @@ import type { ComponentPack } from './types/registry';
 import type { AnalysisResult, Suggestion, CanvasNode, Connection } from './types';
 import { analyzeSystem } from './utils/analyzer';
 import { demoNodes, demoConnections } from './features/architecture/data/demo';
-import { Play, Save, FolderOpen, RotateCcw, Keyboard, Upload } from 'lucide-react';
+import { Play, Save, FolderOpen, RotateCcw, Keyboard, Upload, Menu, PanelRight, X } from 'lucide-react';
 import { useArchitectureStore } from './features/architecture/store';
 import { useConstraintsStore } from './features/constraints/store';
 import { useCreateArchitecture } from './features/architecture/hooks/useArchitectures';
@@ -42,6 +42,10 @@ function AppContent() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [currentArchitectureId, setCurrentArchitectureId] = useState<string | null>(null);
+
+  // Responsive UI state
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
 
   const handleRunAnalysis = () => {
     const result = analyzeSystem(nodes, connections, constraints);
@@ -140,98 +144,175 @@ function AppContent() {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="h-screen flex flex-col bg-slate-950">
-        <header className="h-16 bg-slate-900 border-b border-slate-700/50 flex items-center justify-between px-6">
-          <div className="flex items-center gap-4">
+        <header className="h-16 bg-slate-900 border-b border-slate-700/50 flex items-center justify-between px-4 md:px-6 shrink-0 z-40 relative">
+          <div className="flex items-center gap-3 md:gap-4">
+            <button
+              className="md:hidden p-2 -ml-2 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition-colors"
+              onClick={() => setIsLeftPanelOpen(!isLeftPanelOpen)}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
             <div>
               <h1 className="text-xl font-bold text-slate-100">Atlaso</h1>
-              <p className="text-xs text-slate-500">Distributed System Design & Constraint Analyzer</p>
+              <p className="text-xs text-slate-500 hidden sm:block">Distributed System Design & Constraint Analyzer</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <button
               onClick={handleRunAnalysis}
               disabled={nodes.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg text-white text-sm font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 rounded-lg text-white text-xs md:text-sm font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
-              <Play className="w-4 h-4" />
-              Run Analysis
+              <Play className="w-3 h-3 md:w-4 md:h-4" />
+              <span className="hidden sm:inline">Run Analysis</span>
+              <span className="sm:hidden">Run</span>
             </button>
 
-            <div className="w-px h-8 bg-slate-700"></div>
+            <div className="w-px h-6 md:h-8 bg-slate-700 mx-1"></div>
+
+            <div className="hidden md:flex items-center gap-3">
+              <button
+                onClick={() => setShowLoadModal(true)}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
+                title="Load Saved Architecture"
+              >
+                <Upload className="w-4 h-4" />
+                Load
+              </button>
+
+              <button
+                onClick={handleLoadDemo}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
+                title="Load Demo Architecture"
+              >
+                <FolderOpen className="w-4 h-4" />
+                Demo
+              </button>
+
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
+                title="Reset Canvas"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Reset
+              </button>
+
+              <div className="w-px h-8 bg-slate-700"></div>
+
+              <button
+                onClick={() => setShowSaveModal(true)}
+                disabled={nodes.length === 0}
+                className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300 disabled:opacity-50"
+                title="Save Architecture"
+              >
+                <Save className="w-4 h-4" />
+                Save
+              </button>
+            </div>
+
+            {/* Mobile Actions Menu or simplified buttons */}
+            <div className="flex md:hidden items-center gap-1">
+              <button
+                onClick={() => setShowLoadModal(true)}
+                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300"
+              >
+                <Upload className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setShowSaveModal(true)}
+                disabled={nodes.length === 0}
+                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 disabled:opacity-50"
+              >
+                <Save className="w-5 h-5" />
+              </button>
+            </div>
 
             <button
-              onClick={() => setShowLoadModal(true)}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
-              title="Load Saved Architecture"
+              className="md:hidden p-2 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition-colors"
+              onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
             >
-              <Upload className="w-4 h-4" />
-              Load
-            </button>
-
-            <button
-              onClick={handleLoadDemo}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
-              title="Load Demo Architecture"
-            >
-              <FolderOpen className="w-4 h-4" />
-              Demo
-            </button>
-
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300"
-              title="Reset Canvas"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Reset
-            </button>
-
-            <div className="w-px h-8 bg-slate-700"></div>
-
-            <button
-              onClick={() => setShowSaveModal(true)}
-              disabled={nodes.length === 0}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-sm text-slate-300 disabled:opacity-50"
-              title="Save Architecture"
-            >
-              <Save className="w-4 h-4" />
-              Save
-            </button>
-
-            <button
-              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-              title="Keyboard Shortcuts"
-            >
-              <Keyboard className="w-5 h-5 text-slate-400" />
+              <PanelRight className="w-5 h-5" />
             </button>
           </div>
         </header>
 
-        <div className="flex-1 flex overflow-hidden">
-          <ComponentRegistryPanel
-            enabledPacks={enabledPacks}
-            onTogglePack={handleTogglePack}
-          />
-          <Canvas
-            nodes={nodes}
-            connections={connections}
-            onAddNode={addNode}
-            onUpdateNode={(node) => updateNode(node.id, node)}
-            onNodePositionChange={setNodePosition}
-            onDeleteNode={deleteNode}
-            onDuplicateNode={duplicateNode}
-            onUpdateConnection={(conn) => updateConnection(conn.id, conn)}
-            onDeleteConnection={deleteConnection}
-            onAddConnection={addConnection}
-          />
-          <RightPanel
-            constraints={constraints}
-            onConstraintsChange={updateConstraints}
-            analysis={analysis}
-            suggestions={suggestions}
-            nodes={nodes}
-          />
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* Left Panel - Mobile Drawer & Desktop Sidebar */}
+          <div className={`
+            fixed inset-y-0 left-0 z-30 w-80 transform transition-transform duration-300 ease-in-out bg-slate-900 border-r border-slate-700/50 pt-16 md:pt-0
+            md:relative md:translate-x-0 md:inset-auto md:w-80
+            ${isLeftPanelOpen ? 'translate-x-0' : '-translate-x-full'}
+          `}>
+            <div className="h-full flex flex-col relative">
+              <button
+                className="md:hidden absolute top-2 right-2 p-2 text-slate-400 hover:text-white"
+                onClick={() => setIsLeftPanelOpen(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <ComponentRegistryPanel
+                enabledPacks={enabledPacks}
+                onTogglePack={handleTogglePack}
+              />
+            </div>
+          </div>
+
+          {/* Overlay for mobile left panel */}
+          {isLeftPanelOpen && (
+            <div
+              className="fixed inset-0 z-20 bg-black/50 md:hidden backdrop-blur-sm"
+              onClick={() => setIsLeftPanelOpen(false)}
+            />
+          )}
+
+          {/* Main Canvas Area */}
+          <div className="flex-1 relative z-0">
+            <Canvas
+              nodes={nodes}
+              connections={connections}
+              onAddNode={addNode}
+              onUpdateNode={(node) => updateNode(node.id, node)}
+              onNodePositionChange={setNodePosition}
+              onDeleteNode={deleteNode}
+              onDuplicateNode={duplicateNode}
+              onUpdateConnection={(conn) => updateConnection(conn.id, conn)}
+              onDeleteConnection={deleteConnection}
+              onAddConnection={addConnection}
+            />
+          </div>
+
+          {/* Right Panel - Mobile Drawer & Desktop Sidebar */}
+          <div className={`
+            fixed inset-y-0 right-0 z-30 w-96 transform transition-transform duration-300 ease-in-out bg-slate-900 border-l border-slate-700/50 pt-16 md:pt-0
+            md:relative md:translate-x-0 md:inset-auto md:w-96
+            ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}
+          `}>
+            <div className="h-full flex flex-col relative">
+              <button
+                className="md:hidden absolute top-2 left-2 p-2 text-slate-400 hover:text-white z-10"
+                onClick={() => setIsRightPanelOpen(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <RightPanel
+                constraints={constraints}
+                onConstraintsChange={updateConstraints}
+                analysis={analysis}
+                suggestions={suggestions}
+                nodes={nodes}
+              />
+            </div>
+          </div>
+
+          {/* Overlay for mobile right panel */}
+          {isRightPanelOpen && (
+            <div
+              className="fixed inset-0 z-20 bg-black/50 md:hidden backdrop-blur-sm"
+              onClick={() => setIsRightPanelOpen(false)}
+            />
+          )}
         </div>
       </div>
 

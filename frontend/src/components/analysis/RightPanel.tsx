@@ -26,7 +26,7 @@ export function RightPanel({ constraints, onConstraintsChange, analysis, suggest
   ];
 
   return (
-    <div className="w-96 h-full bg-slate-900 border-l border-slate-700/50 flex flex-col">
+    <div className="h-full bg-slate-900 border-l border-slate-700/50 flex flex-col">
       {/* Tabs */}
       <div className="flex border-b border-slate-700/50">
         {tabs.map((tab) => (

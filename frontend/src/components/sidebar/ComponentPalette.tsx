@@ -85,7 +85,7 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
     const newDomains = new Set(selectedDomains);
     if (newDomains.has(domain))
       newDomains.delete(domain);
-  else
+    else
       newDomains.add(domain);
     setSelectedDomains(newDomains);
   };
@@ -109,7 +109,7 @@ export function ComponentRegistryPanel({ enabledPacks, onTogglePack }: Component
   const activeFilterCount = selectedVendors.size + selectedDomains.size + selectedPatterns.size;
 
   return (
-    <div className="w-80 h-full bg-slate-900 border-r border-slate-700/50 flex flex-col">
+    <div className="h-full bg-slate-900 border-r border-slate-700/50 flex flex-col">
       <div className="p-4 border-b border-slate-700/50">
         <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-3">
           Component Registry
