@@ -3,6 +3,8 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Toaster, toast } from 'sonner';
 import { ComponentRegistryPanel } from './components/sidebar/ComponentPalette';
 import { Canvas } from './components/canvas/ArchitectureCanvas';
 import { RightPanel } from './components/analysis/RightPanel';
@@ -115,7 +117,7 @@ function AppContent() {
       setShowSaveModal(false);
     } catch (error) {
       console.error('Failed to save architecture:', error);
-      alert('Failed to save architecture. Is the backend running?');
+      toast.error('Failed to save architecture. Please check backend connection.');
     }
   };
 
@@ -251,28 +253,41 @@ function AppContent() {
 
         <div className="flex-1 flex overflow-hidden relative">
           {/* Left Panel - Mobile Drawer & Desktop Sidebar */}
-          <div className={`
-            fixed inset-y-0 left-0 z-30 w-72 transform transition-transform duration-300 ease-in-out bg-slate-900 border-r border-slate-700/50 pt-16 md:pt-0
-            md:relative md:translate-x-0 md:inset-auto md:w-72
-            ${isLeftPanelOpen ? 'translate-x-0' : '-translate-x-full'}
-          `}>
-            <div className="h-full flex flex-col relative">
-              <button
-                className="md:hidden absolute top-2 right-2 p-2 text-slate-400 hover:text-white"
-                onClick={() => setIsLeftPanelOpen(false)}
+          <AnimatePresence mode="wait">
+            {(isLeftPanelOpen || window.innerWidth >= 768) && (
+              <motion.div
+                initial={{ x: -300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className={`
+                  fixed inset-y-0 left-0 z-30 w-72 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50 pt-16 md:pt-0
+                  md:relative md:translate-x-0 md:inset-auto md:w-72
+                  ${isLeftPanelOpen ? 'block' : 'hidden md:block'}
+                `}
               >
-                <X className="w-5 h-5" />
-              </button>
-              <ComponentRegistryPanel
-                enabledPacks={enabledPacks}
-                onTogglePack={handleTogglePack}
-              />
-            </div>
-          </div>
+                <div className="h-full flex flex-col relative">
+                  <button
+                    className="md:hidden absolute top-2 right-2 p-2 text-slate-400 hover:text-white"
+                    onClick={() => setIsLeftPanelOpen(false)}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                  <ComponentRegistryPanel
+                    enabledPacks={enabledPacks}
+                    onTogglePack={handleTogglePack}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Overlay for mobile left panel */}
           {isLeftPanelOpen && (
-            <div
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="fixed inset-0 z-20 bg-black/50 md:hidden backdrop-blur-sm"
               onClick={() => setIsLeftPanelOpen(false)}
             />
@@ -295,31 +310,44 @@ function AppContent() {
           </div>
 
           {/* Right Panel - Mobile Drawer & Desktop Sidebar */}
-          <div className={`
-            fixed inset-y-0 right-0 z-30 w-80 transform transition-transform duration-300 ease-in-out bg-slate-900 border-l border-slate-700/50 pt-16 md:pt-0
-            md:relative md:translate-x-0 md:inset-auto md:w-80
-            ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}
-          `}>
-            <div className="h-full flex flex-col relative">
-              <button
-                className="md:hidden absolute top-2 left-2 p-2 text-slate-400 hover:text-white z-10"
-                onClick={() => setIsRightPanelOpen(false)}
+          <AnimatePresence mode="wait">
+            {(isRightPanelOpen || window.innerWidth >= 768) && (
+              <motion.div
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: 300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className={`
+                  fixed inset-y-0 right-0 z-30 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-slate-700/50 pt-16 md:pt-0
+                  md:relative md:translate-x-0 md:inset-auto md:w-80
+                  ${isRightPanelOpen ? 'block' : 'hidden md:block'}
+                `}
               >
-                <X className="w-5 h-5" />
-              </button>
-              <RightPanel
-                constraints={constraints}
-                onConstraintsChange={updateConstraints}
-                analysis={analysis}
-                suggestions={suggestions}
-                nodes={nodes}
-              />
-            </div>
-          </div>
+                <div className="h-full flex flex-col relative">
+                  <button
+                    className="md:hidden absolute top-2 left-2 p-2 text-slate-400 hover:text-white z-10"
+                    onClick={() => setIsRightPanelOpen(false)}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                  <RightPanel
+                    constraints={constraints}
+                    onConstraintsChange={updateConstraints}
+                    analysis={analysis}
+                    suggestions={suggestions}
+                    nodes={nodes}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Overlay for mobile right panel */}
           {isRightPanelOpen && (
-            <div
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="fixed inset-0 z-20 bg-black/50 md:hidden backdrop-blur-sm"
               onClick={() => setIsRightPanelOpen(false)}
             />
@@ -339,6 +367,7 @@ function AppContent() {
         onClose={() => setShowLoadModal(false)}
         onLoad={handleLoad}
       />
+      <Toaster position="top-center" theme="dark" richColors />
     </DndProvider>
   );
 }
