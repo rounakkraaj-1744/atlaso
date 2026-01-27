@@ -25,8 +25,7 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
 
     const renderAssumptionGroup = (
         assumptions: typeof analysis.assumptions,
-        title: string,
-        color: string
+        title: string
     ) => {
         if (assumptions.length === 0) return null;
 
@@ -92,9 +91,9 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
                 </div>
             </div>
 
-            {renderAssumptionGroup(highImpact, 'High Impact Assumptions', 'red')}
-            {renderAssumptionGroup(mediumImpact, 'Medium Impact Assumptions', 'yellow')}
-            {renderAssumptionGroup(lowImpact, 'Low Impact Assumptions', 'blue')}
+            {renderAssumptionGroup(highImpact, 'High Impact Assumptions')}
+            {renderAssumptionGroup(mediumImpact, 'Medium Impact Assumptions')}
+            {renderAssumptionGroup(lowImpact, 'Low Impact Assumptions')}
 
             {highImpact.length > 0 && (
                 <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">

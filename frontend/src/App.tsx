@@ -9,9 +9,9 @@ import { RightPanel } from './components/analysis/RightPanel';
 import { LoadArchitectureModal, SaveArchitectureModal } from './components/modals';
 import type { ComponentPack } from './types/registry';
 import type { AnalysisResult, Suggestion, CanvasNode, Connection } from './types';
-import { analyzeSystem } from './utils/analyzer';
+import { analyzeSystem } from './features/analysis/engine/analyzer';
 import { demoNodes, demoConnections } from './features/architecture/data/demo';
-import { Play, Save, FolderOpen, RotateCcw, Keyboard, Upload, Menu, PanelRight, X } from 'lucide-react';
+import { Play, Save, FolderOpen, RotateCcw, Upload, Menu, PanelRight, X } from 'lucide-react';
 import { useArchitectureStore } from './features/architecture/store';
 import { useConstraintsStore } from './features/constraints/store';
 import { useCreateArchitecture } from './features/architecture/hooks/useArchitectures';
@@ -52,7 +52,6 @@ function AppContent() {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
-  const [currentArchitectureId, setCurrentArchitectureId] = useState<string | null>(null);
 
   // Responsive UI state
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
@@ -84,14 +83,12 @@ function AppContent() {
     resetCanvas();
     setAnalysis(null);
     setSuggestions([]);
-    setCurrentArchitectureId(null);
   };
 
   const handleLoadDemo = () => {
     resetCanvas();
     demoNodes.forEach((node) => addNode(node));
     demoConnections.forEach((conn) => addConnection(conn));
-    setCurrentArchitectureId(null);
   };
 
   const handleTogglePack = (pack: ComponentPack) => {
@@ -143,7 +140,7 @@ function AppContent() {
       });
     });
 
-    setCurrentArchitectureId(architecture.id);
+    // setCurrentArchitectureId(architecture.id);
     setShowLoadModal(false);
   };
 
@@ -151,6 +148,9 @@ function AppContent() {
     if (nodes.length > 0)
       handleRunAnalysis();
   }, [nodes.length, constraints]);
+
+  // const backend = isTouchDevice() ? TouchBackend : HTML5Backend;
+  // const backendOptions = isTouchDevice() ? { enableMouseEvents: true } : {};
 
   return (
     <DndProvider backend={backend} options={backendOptions}>

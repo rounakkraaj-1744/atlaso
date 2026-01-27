@@ -1,25 +1,27 @@
 import { memo } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import { cn } from '../../../lib/utils';
 import type { NodeStatus } from '../../../types';
 
-interface BaseNodeData {
+interface BaseNodeData extends Record<string, unknown> {
     label: string;
     status: NodeStatus;
     throughput?: number;
     latency?: number;
 }
 
-export const BaseNode = memo(({ data, selected }: NodeProps<BaseNodeData>) => {
+export const BaseNode = memo(({ data, selected }: NodeProps<Node<BaseNodeData>>) => {
     const statusColors = {
         healthy: 'border-accent-green/50 bg-accent-green/10',
-        bottleneck: 'border-accent-yellow/50 bg-accent-yellow/10',
+        warning: 'border-accent-yellow/50 bg-accent-yellow/10',
+        bottleneck: 'border-orange-500/50 bg-orange-500/10',
         overloaded: 'border-accent-red/50 bg-accent-red/10',
     };
 
     const statusIndicators = {
         healthy: 'bg-accent-green',
-        bottleneck: 'bg-accent-yellow animate-pulse',
+        warning: 'bg-accent-yellow',
+        bottleneck: 'bg-orange-500 animate-pulse',
         overloaded: 'bg-accent-red animate-pulse',
     };
 

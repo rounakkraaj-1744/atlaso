@@ -1,11 +1,10 @@
 import { scenarioPresets } from '../../features/constraints/data/scenarios';
-import type { ScenarioPreset, SystemConstraints } from '../../types';
+import type { ScenarioPreset } from '../../types';
 import { Zap, TrendingUp, AlertTriangle, Activity } from 'lucide-react';
 
 interface ScenarioSelectorProps {
     currentScenario: ScenarioPreset | 'custom';
     onScenarioChange: (scenario: ScenarioPreset) => void;
-    currentConstraints: SystemConstraints;
 }
 
 const scenarioIcons = {
@@ -22,7 +21,7 @@ const scenarioColors = {
     incident: 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20',
 };
 
-export function ScenarioSelector({ currentScenario, onScenarioChange, currentConstraints }: ScenarioSelectorProps) {
+export function ScenarioSelector({ currentScenario, onScenarioChange }: ScenarioSelectorProps) {
     return (
         <div className="space-y-3">
             <div>

@@ -23,7 +23,7 @@ function findDownstreamImpacts(nodeId: string, connections: Connection[]): strin
     .map(c => c.targetId);
 }
 
-function trackAssumptions( node: CanvasNode, defaultThroughput: number, defaultLatency: number): AnalysisResult['assumptions'] {
+function trackAssumptions(node: CanvasNode): AnalysisResult['assumptions'] {
   const assumptions: AnalysisResult['assumptions'] = [];
 
   if (!node.assumptions?.throughput || node.assumptions.throughput === 'default') {
@@ -65,7 +65,7 @@ function trackAssumptions( node: CanvasNode, defaultThroughput: number, defaultL
   return assumptions;
 }
 
-export function analyzeSystem( nodes: CanvasNode[], connections: Connection[], constraints: SystemConstraints ): { analysis: AnalysisResult; suggestions: Suggestion[] } {
+export function analyzeSystem(nodes: CanvasNode[], connections: Connection[], constraints: SystemConstraints): { analysis: AnalysisResult; suggestions: Suggestion[] } {
   if (nodes.length === 0) {
     return {
       analysis: {
@@ -89,7 +89,7 @@ export function analyzeSystem( nodes: CanvasNode[], connections: Connection[], c
   nodes.forEach((node) => {
     const effectiveThroughput = node.config.throughput * node.config.scalingFactor;
 
-    const nodeAssumptions = trackAssumptions(node, node.config.throughput, node.config.latency);
+    const nodeAssumptions = trackAssumptions(node);
     allAssumptions.push(...nodeAssumptions);
 
     const upstreamSources = findUpstreamSources(node.id, connections);
@@ -151,7 +151,7 @@ export function analyzeSystem( nodes: CanvasNode[], connections: Connection[], c
     }
   });
 
-  const syncChains = findSyncChains(nodes, connections);
+  const syncChains = findSyncChains(connections);
   syncChains.forEach((chain) => {
     const totalLatency = chain.reduce((sum, nodeId) => {
       const node = nodes.find((n) => n.id === nodeId);
@@ -227,7 +227,7 @@ export function analyzeSystem( nodes: CanvasNode[], connections: Connection[], c
   };
 }
 
-function findSyncChains(nodes: CanvasNode[], connections: Connection[]): string[][] {
+function findSyncChains(connections: Connection[]): string[][] {
   const syncConnections = connections.filter((c) => c.type === 'sync');
   const chains: string[][] = [];
 

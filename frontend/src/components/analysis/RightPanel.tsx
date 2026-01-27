@@ -15,7 +15,7 @@ interface RightPanelProps {
 
 type TabType = 'constraints' | 'analysis' | 'suggestions' | 'assumptions';
 
-export function RightPanel({ constraints, onConstraintsChange, analysis, suggestions, nodes }: RightPanelProps) {
+export function RightPanel({ constraints, onConstraintsChange, analysis, suggestions }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('constraints');
 
   const tabs: { id: TabType; label: string; badge?: number }[] = [

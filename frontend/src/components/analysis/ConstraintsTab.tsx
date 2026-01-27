@@ -28,7 +28,6 @@ export function ConstraintsTab({ constraints, onConstraintsChange }: Constraints
             <ScenarioSelector
                 currentScenario={currentScenario}
                 onScenarioChange={handleScenarioChange}
-                currentConstraints={constraints}
             />
 
             <div className="border-t border-border pt-4">

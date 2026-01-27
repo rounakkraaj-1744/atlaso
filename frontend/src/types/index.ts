@@ -20,7 +20,13 @@ export type ComponentType =
     | 'mongodb'
     | 'metrics'
     | 'logs'
-    | 'tracing';
+    | 'tracing'
+    | 'aws-cloudfront'
+    | 'aws-alb'
+    | 'aws-lambda'
+    | 'aws-elasticache-redis'
+    | 'aws-msk'
+    | 'aws-rds-postgres';
 
 export type ConnectionType = 'sync' | 'async';
 
@@ -45,6 +51,8 @@ export interface ConfigAssumptions {
     scalingFactor: AssumptionSource;
 }
 
+export type NodeStatus = 'healthy' | 'warning' | 'bottleneck' | 'overloaded';
+
 export interface CanvasNode {
     id: string;
     type: ComponentType;
@@ -58,7 +66,7 @@ export interface CanvasNode {
         notes: string;
     };
     assumptions?: ConfigAssumptions;
-    status: 'healthy' | 'warning' | 'bottleneck' | 'overloaded';
+    status: NodeStatus;
     visualPriority?: VisualPriority;
 }
 

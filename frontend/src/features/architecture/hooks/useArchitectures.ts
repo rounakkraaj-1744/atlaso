@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api, type Architecture } from '../../../lib/api';
+import { api } from '../../../lib/api';
 import type { CanvasNode, Connection } from '../../../types';
 
 export function useArchitectures(page = 1, limit = 20) {

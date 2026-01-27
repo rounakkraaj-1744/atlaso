@@ -56,7 +56,7 @@ export const useArchitectureStore = create<ArchitectureState>((set) => ({
         set((state) => ({
             nodes: state.nodes.filter((node) => node.id !== id),
             connections: state.connections.filter(
-                (conn) => conn.from !== id && conn.to !== id
+                (conn) => conn.sourceId !== id && conn.targetId !== id
             ),
             selectedNodeId: state.selectedNodeId === id ? null : state.selectedNodeId,
         })),

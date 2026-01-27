@@ -29,7 +29,7 @@ const sourceConfig = {
     },
 };
 
-export function AssumptionIndicator({ source, explanation, value, field }: AssumptionIndicatorProps) {
+export function AssumptionIndicator({ source, explanation, field }: AssumptionIndicatorProps) {
     const config = sourceConfig[source];
 
     return (

@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import type { CanvasNode } from '../../types';
-import { X, TrendingUp, Clock, Zap, Settings } from 'lucide-react';
+import { X, Settings } from 'lucide-react';
 
 interface NodeDetailPopoverProps {
     node: CanvasNode;
