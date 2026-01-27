@@ -1,9 +1,4 @@
-/**
- * Edge Model - Graph edge representation for connections
- */
-
 import type { ConnectionType, VisualPriority } from '../types';
-
 export interface GraphEdge {
     id: string;
     sourceId: string;
@@ -14,16 +9,8 @@ export interface GraphEdge {
     visualPriority?: VisualPriority;
 }
 
-/**
- * Create a new graph edge
- */
-export function createEdge(
-    id: string,
-    sourceId: string,
-    targetId: string,
-    type: ConnectionType = 'sync',
-    options?: { hasRetry?: boolean; hasBuffer?: boolean },
-): GraphEdge {
+//create a new graph edge
+export function createEdge( id: string, sourceId: string, targetId: string, type: ConnectionType = 'sync', options?: { hasRetry?: boolean; hasBuffer?: boolean } ): GraphEdge {
     return {
         id,
         sourceId,
@@ -34,23 +21,16 @@ export function createEdge(
     };
 }
 
-/**
- * Check if edge is synchronous
- */
-export function isSyncEdge(edge: GraphEdge): boolean {
+// check synchronous edges
+export function isSyncEdge (edge: GraphEdge): boolean {
     return edge.type === 'sync';
 }
 
-/**
- * Check if edge is asynchronous
- */
-export function isAsyncEdge(edge: GraphEdge): boolean {
+// check asynchronous edges
+export function isAsyncEdge (edge: GraphEdge): boolean {
     return edge.type === 'async';
 }
-
-/**
- * Check if edge has fault tolerance
- */
-export function hasFaultTolerance(edge: GraphEdge): boolean {
+// check for fault tolerance in edge
+export function hasFaultTolerance (edge: GraphEdge): boolean {
     return edge.hasRetry || edge.hasBuffer;
 }
