@@ -50,6 +50,11 @@ interface ComponentNodeProps {
   isDimmed?: boolean;
   showInlineExplanation?: boolean;
   inlineExplanation?: string;
+  // Connection props
+  onStartConnection?: (nodeId: string, side: 'left' | 'right') => void;
+  onEndConnection?: (nodeId: string) => void;
+  isConnecting?: boolean;
+  connectionSource?: string | null;
 }
 
 export function ComponentNode({
@@ -62,6 +67,10 @@ export function ComponentNode({
   isDimmed = false,
   showInlineExplanation = false,
   inlineExplanation,
+  onStartConnection,
+  onEndConnection,
+  isConnecting = false,
+  connectionSource,
 }: ComponentNodeProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showDetailPopover, setShowDetailPopover] = useState(false);
@@ -78,7 +87,7 @@ export function ComponentNode({
   }, [node.position, isDragging]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0 || (e.target as HTMLElement).closest('button'))
+    if (e.button !== 0 || (e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('.connection-port'))
       return;
 
     e.preventDefault();
@@ -99,7 +108,6 @@ export function ComponentNode({
       const newX = (e.clientX - dragStart.x) / scale;
       const newY = (e.clientY - dragStart.y) / scale;
 
-      // Check if we've moved more than a small threshold (5px)
       const deltaX = Math.abs(newX - currentPosition.x);
       const deltaY = Math.abs(newY - currentPosition.y);
       if (deltaX > 5 || deltaY > 5) {
@@ -111,7 +119,6 @@ export function ComponentNode({
 
     const handleMouseUp = () => {
       setIsDragging(false);
-      // Commit the final position
       onPositionChange(node.id, currentPosition);
     };
 
@@ -144,10 +151,25 @@ export function ComponentNode({
     onClick();
   };
 
+  const handlePortClick = (e: React.MouseEvent, side: 'left' | 'right') => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (isConnecting && connectionSource && connectionSource !== node.id) {
+      // Complete the connection
+      onEndConnection?.(node.id);
+    } else if (!isConnecting && side === 'right') {
+      // Start a new connection (only from right port)
+      onStartConnection?.(node.id, side);
+    }
+  };
+
   const registryItem = componentRegistry[node.type];
   const status = statusConfig[node.status];
-
   const effectiveThroughput = node.config.throughput * node.config.scalingFactor;
+
+  // Can this node be a connection target?
+  const canBeTarget = isConnecting && connectionSource && connectionSource !== node.id;
 
   return (
     <>
@@ -169,7 +191,7 @@ export function ComponentNode({
           } ${node.status === 'bottleneck' || node.status === 'overloaded'
             ? 'animate-pulse-slow shadow-xl ' + status.glow
             : 'shadow-lg hover:shadow-xl'
-          } ${isHighlighted ? 'ring-4 ring-blue-500/50' : ''}`}
+          } ${isHighlighted ? 'ring-4 ring-blue-500/50' : ''} ${canBeTarget ? 'ring-2 ring-green-400/50' : ''}`}
       >
         {onDelete && (
           <button
@@ -228,8 +250,29 @@ export function ComponentNode({
           </div>
         )}
 
-        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-500 border-2 border-slate-900 opacity-0 hover:opacity-100 transition-opacity cursor-crosshair" />
-        <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-500 border-2 border-slate-900 opacity-0 hover:opacity-100 transition-opacity cursor-crosshair" />
+        {/* Left port - input (target for connections) */}
+        <div
+          className={`connection-port absolute -left-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 transition-all cursor-pointer z-10 flex items-center justify-center
+            ${canBeTarget
+              ? 'bg-green-400 border-green-300 scale-125 shadow-lg shadow-green-400/50'
+              : 'bg-slate-600 border-slate-500 hover:bg-blue-500 hover:border-blue-400 hover:scale-110'}`}
+          onClick={(e) => handlePortClick(e, 'left')}
+          title={canBeTarget ? 'Click to connect here' : 'Input port'}
+        >
+          <div className="w-2 h-2 rounded-full bg-slate-400" />
+        </div>
+
+        {/* Right port - output (source for connections) */}
+        <div
+          className={`connection-port absolute -right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 transition-all cursor-pointer z-10 flex items-center justify-center
+            ${isConnecting && connectionSource === node.id
+              ? 'bg-yellow-400 border-yellow-300 scale-125 shadow-lg shadow-yellow-400/50'
+              : 'bg-slate-600 border-slate-500 hover:bg-blue-500 hover:border-blue-400 hover:scale-110'}`}
+          onClick={(e) => handlePortClick(e, 'right')}
+          title="Click to start connection"
+        >
+          <div className="w-2 h-2 rounded-full bg-slate-400" />
+        </div>
       </div>
 
       {showDetailPopover && (

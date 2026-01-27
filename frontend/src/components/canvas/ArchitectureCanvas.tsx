@@ -6,7 +6,7 @@ import { ConnectionDrawer } from './ConnectionDrawer';
 import { Minimap } from './Minimap';
 import type { CanvasNode, ComponentType, Connection } from '../../types';
 import { componentRegistry } from '../../features/registry/data/components';
-import { ZoomIn, ZoomOut, Maximize2, Keyboard } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 interface CanvasProps {
     nodes: CanvasNode[];
@@ -40,21 +40,43 @@ export function Canvas({
     const [panStart, setPanStart] = useState({ x: 0, y: 0 });
     const [selectedNode, setSelectedNode] = useState<CanvasNode | null>(null);
     const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
-    const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
-    const [showShortcuts, setShowShortcuts] = useState(false);
+
+    // Connection creation state
+    const [connectionSource, setConnectionSource] = useState<string | null>(null);
+    const [isConnecting, setIsConnecting] = useState(false);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+    // Track mouse position for connection preview line
+    useEffect(() => {
+        if (!isConnecting) return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (canvasRef.current) {
+                const rect = canvasRef.current.getBoundingClientRect();
+                const x = (e.clientX - rect.left - pan.x) / scale;
+                const y = (e.clientY - rect.top - pan.y) / scale;
+                setMousePos({ x, y });
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, [isConnecting, pan, scale]);
 
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Delete selected node
             if (e.key === 'Delete' || e.key === 'Backspace') {
                 if (selectedNode && onDeleteNode) {
                     onDeleteNode(selectedNode.id);
                     setSelectedNode(null);
                 }
+                if (selectedConnection && onDeleteConnection) {
+                    onDeleteConnection(selectedConnection.id);
+                    setSelectedConnection(null);
+                }
             }
 
-            // Duplicate selected node (Cmd/Ctrl + D)
             if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
                 e.preventDefault();
                 if (selectedNode && onDuplicateNode) {
@@ -62,21 +84,58 @@ export function Canvas({
                 }
             }
 
-            // Show shortcuts (?)
-            if (e.key === '?' && !e.metaKey && !e.ctrlKey) {
-                setShowShortcuts(!showShortcuts);
-            }
-
-            // Escape to deselect
             if (e.key === 'Escape') {
                 setSelectedNode(null);
                 setSelectedConnection(null);
+                setIsConnecting(false);
+                setConnectionSource(null);
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedNode, onDeleteNode, onDuplicateNode, showShortcuts]);
+    }, [selectedNode, selectedConnection, onDeleteNode, onDeleteConnection, onDuplicateNode]);
+
+    const handleStartConnection = useCallback((nodeId: string) => {
+        setConnectionSource(nodeId);
+        setIsConnecting(true);
+        const sourceNode = nodes.find(n => n.id === nodeId);
+        if (sourceNode) {
+            setMousePos({
+                x: sourceNode.position.x + 128,
+                y: sourceNode.position.y + 40
+            });
+        }
+    }, [nodes]);
+
+    const handleEndConnection = useCallback((targetNodeId: string) => {
+        if (connectionSource && connectionSource !== targetNodeId && onAddConnection) {
+            const exists = connections.some(
+                (c) => c.sourceId === connectionSource && c.targetId === targetNodeId
+            );
+
+            if (!exists) {
+                const newConnection: Connection = {
+                    id: `conn-${Date.now()}`,
+                    sourceId: connectionSource,
+                    targetId: targetNodeId,
+                    type: 'sync',
+                    hasRetry: false,
+                    hasBuffer: false,
+                };
+                onAddConnection(newConnection);
+            }
+        }
+        setIsConnecting(false);
+        setConnectionSource(null);
+    }, [connectionSource, connections, onAddConnection]);
+
+    const handleCanvasClick = useCallback(() => {
+        if (isConnecting) {
+            setIsConnecting(false);
+            setConnectionSource(null);
+        }
+    }, [isConnecting]);
 
     const [{ isOver }, drop] = useDrop(() => ({
         accept: 'COMPONENT',
@@ -143,39 +202,82 @@ export function Canvas({
         setPan({ x: 0, y: 0 });
     };
 
+    const handleConnectionClick = (conn: Connection) => {
+        setSelectedConnection(conn);
+        setSelectedNode(null);
+    };
+
+    const getSourcePosition = () => {
+        if (!connectionSource) return null;
+        const sourceNode = nodes.find(n => n.id === connectionSource);
+        if (!sourceNode) return null;
+        return {
+            x: sourceNode.position.x + 128,
+            y: sourceNode.position.y + 40,
+        };
+    };
+
     const renderConnections = () => {
         return connections.map((conn) => {
             const source = nodes.find((n) => n.id === conn.sourceId);
             const target = nodes.find((n) => n.id === conn.targetId);
             if (!source || !target) return null;
 
-            const x1 = source.position.x + 128; // Half of node width (256px)
-            const y1 = source.position.y + 60;
-            const x2 = target.position.x + 128;
-            const y2 = target.position.y + 60;
+            const x1 = source.position.x + 128;
+            const y1 = source.position.y + 40;
+            const x2 = target.position.x;
+            const y2 = target.position.y + 40;
 
-            const midX = (x1 + x2) / 2;
-            const midY = (y1 + y2) / 2;
-
-            const path = `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`;
+            const isSelected = selectedConnection?.id === conn.id;
+            const strokeColor = conn.type === 'async' ? '#3b82f6' : '#8b5cf6';
 
             return (
-                <g key={conn.id}>
+                <g key={conn.id} style={{ cursor: 'pointer' }} onClick={() => handleConnectionClick(conn)}>
                     <path
-                        d={path}
-                        stroke={conn.type === 'async' ? '#3b82f6' : '#8b5cf6'}
-                        strokeWidth="2"
+                        d={`M ${x1} ${y1} C ${x1 + 50} ${y1}, ${x2 - 50} ${y2}, ${x2} ${y2}`}
+                        stroke="transparent"
+                        strokeWidth="20"
+                        fill="none"
+                    />
+                    <path
+                        d={`M ${x1} ${y1} C ${x1 + 50} ${y1}, ${x2 - 50} ${y2}, ${x2} ${y2}`}
+                        stroke={isSelected ? '#fbbf24' : strokeColor}
+                        strokeWidth={isSelected ? 3 : 2}
                         fill="none"
                         strokeDasharray={conn.type === 'async' ? '5,5' : '0'}
-                        opacity="0.6"
+                        opacity={isSelected ? 1 : 0.7}
                     />
-                    <circle cx={x2} cy={y2} r="4" fill={conn.type === 'async' ? '#3b82f6' : '#8b5cf6'} />
+                    <circle cx={x2} cy={y2} r={isSelected ? 6 : 4} fill={isSelected ? '#fbbf24' : strokeColor} />
                     {conn.hasRetry && (
-                        <circle cx={midX} cy={midY} r="6" fill="#fbbf24" stroke="#78350f" strokeWidth="2" />
+                        <circle cx={(x1 + x2) / 2} cy={(y1 + y2) / 2} r="6" fill="#fbbf24" stroke="#78350f" strokeWidth="2" />
                     )}
                 </g>
             );
         });
+    };
+
+    const renderConnectionPreview = () => {
+        const sourcePos = getSourcePosition();
+        if (!isConnecting || !sourcePos) return null;
+
+        const x1 = sourcePos.x;
+        const y1 = sourcePos.y;
+        const x2 = mousePos.x;
+        const y2 = mousePos.y;
+
+        return (
+            <g>
+                <path
+                    d={`M ${x1} ${y1} C ${x1 + 50} ${y1}, ${x2 - 50} ${y2}, ${x2} ${y2}`}
+                    stroke="#22c55e"
+                    strokeWidth="3"
+                    fill="none"
+                    strokeDasharray="8,4"
+                    opacity="0.8"
+                />
+                <circle cx={x2} cy={y2} r="8" fill="#22c55e" opacity="0.6" />
+            </g>
+        );
     };
 
     return (
@@ -186,14 +288,14 @@ export function Canvas({
                     if (node) canvasRef.current = node;
                 }}
                 className={`relative flex-1 h-full bg-slate-950 overflow-hidden ${isPanning ? 'cursor-grabbing' : 'cursor-default'
-                    } ${isOver ? 'bg-slate-900/50' : ''}`}
+                    } ${isOver ? 'bg-slate-900/50' : ''} ${isConnecting ? 'cursor-crosshair' : ''}`}
                 onWheel={handleWheel}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
+                onClick={handleCanvasClick}
             >
-                {/* Grid background */}
                 <div
                     className="absolute inset-0 opacity-20"
                     style={{
@@ -206,7 +308,6 @@ export function Canvas({
                     }}
                 />
 
-                {/* Canvas content */}
                 <div
                     style={{
                         transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
@@ -214,12 +315,11 @@ export function Canvas({
                     }}
                     className="relative w-full h-full"
                 >
-                    {/* Connections */}
-                    <svg className="absolute inset-0 w-[5000px] h-[5000px] pointer-events-none">
+                    <svg className="absolute inset-0 w-[5000px] h-[5000px]" style={{ pointerEvents: 'all' }}>
                         {renderConnections()}
+                        {renderConnectionPreview()}
                     </svg>
 
-                    {/* Nodes */}
                     {nodes.map((node) => (
                         <ComponentNode
                             key={node.id}
@@ -228,12 +328,21 @@ export function Canvas({
                             onPositionChange={onNodePositionChange}
                             onDelete={onDeleteNode}
                             scale={scale}
+                            onStartConnection={handleStartConnection}
+                            onEndConnection={handleEndConnection}
+                            isConnecting={isConnecting}
+                            connectionSource={connectionSource}
                         />
                     ))}
                 </div>
 
-                {/* Controls */}
-                <div className="absolute top-4 right-4 flex flex-col gap-2">
+                {isConnecting && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-green-600 rounded-lg text-white text-sm font-medium shadow-lg z-50">
+                        🔗 Click on another component to connect • ESC to cancel
+                    </div>
+                )}
+
+                <div className="absolute top-4 right-4 flex flex-col gap-2 z-40">
                     <button
                         onClick={handleZoomIn}
                         className="p-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
@@ -257,24 +366,21 @@ export function Canvas({
                     </button>
                 </div>
 
-                {/* Instructions */}
                 {nodes.length === 0 && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="text-center space-y-3">
                             <div className="text-slate-600 text-lg">Drag components from the left palette</div>
                             <div className="text-slate-700 text-sm">
-                                Shift + Drag or Middle Mouse to pan • Scroll to zoom
+                                Click right port to connect • Shift + Drag to pan • Scroll to zoom
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* Zoom indicator */}
                 <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg">
                     <span className="text-xs font-mono text-slate-400">{Math.round(scale * 100)}%</span>
                 </div>
 
-                {/* Legend */}
                 {connections.length > 0 && (
                     <div className="absolute bottom-4 left-4 p-3 bg-slate-800 border border-slate-700 rounded-lg space-y-2">
                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
@@ -288,14 +394,9 @@ export function Canvas({
                             <div className="w-8 h-0.5 bg-blue-500 border-dashed" style={{ borderTopWidth: '2px', borderTopStyle: 'dashed' }}></div>
                             <span className="text-xs text-slate-400">Asynchronous</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-yellow-400 border-2 border-yellow-800"></div>
-                            <span className="text-xs text-slate-400">Retry enabled</span>
-                        </div>
                     </div>
                 )}
 
-                {/* Minimap */}
                 <Minimap
                     nodes={nodes}
                     connections={connections}
@@ -306,7 +407,6 @@ export function Canvas({
                 />
             </div>
 
-            {/* Node Config Drawer */}
             {selectedNode && (
                 <NodeConfigDrawer
                     node={selectedNode}
@@ -315,39 +415,16 @@ export function Canvas({
                 />
             )}
 
-            {/* Connection Config Drawer */}
             {selectedConnection && onUpdateConnection && onDeleteConnection && (
                 <ConnectionDrawer
                     connection={selectedConnection}
                     onClose={() => setSelectedConnection(null)}
                     onUpdate={onUpdateConnection}
-                    onDelete={() => onDeleteConnection(selectedConnection.id)}
+                    onDelete={() => {
+                        onDeleteConnection(selectedConnection.id);
+                        setSelectedConnection(null);
+                    }}
                 />
-            )}
-
-            {/* Keyboard Shortcuts */}
-            {showShortcuts && (
-                <div className="absolute top-4 left-4 p-3 bg-slate-800 border border-slate-700 rounded-lg space-y-2">
-                    <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
-                        Keyboard Shortcuts
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-0.5 bg-purple-500"></div>
-                        <span className="text-xs text-slate-400">Delete Node (Delete/Backspace)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-0.5 bg-blue-500 border-dashed" style={{ borderTopWidth: '2px', borderTopStyle: 'dashed' }}></div>
-                        <span className="text-xs text-slate-400">Duplicate Node (Cmd/Ctrl + D)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-yellow-400 border-2 border-yellow-800"></div>
-                        <span className="text-xs text-slate-400">Show Shortcuts (?)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-yellow-400 border-2 border-yellow-800"></div>
-                        <span className="text-xs text-slate-400">Deselect (Escape)</span>
-                    </div>
-                </div>
             )}
         </>
     );
