@@ -1,1 +1,1 @@
-export class CreateConstraintDto {}
+export class CreateConstraintDto { }
