@@ -1,7 +1,3 @@
-/**
- * Core Types - Re-export shared types for core module usage
- */
-
 export type ComponentType =
     | 'load-balancer'
     | 'api-gateway'
@@ -18,11 +14,8 @@ export type ComponentType =
     | 'metrics'
     | 'logs'
     | 'tracing';
-
 export type ConnectionType = 'sync' | 'async';
-
 export type VisualPriority = 'critical' | 'normal' | 'background';
-
 export type Severity = 'low' | 'medium' | 'high' | 'critical';
 
 export interface NodeConfig {
