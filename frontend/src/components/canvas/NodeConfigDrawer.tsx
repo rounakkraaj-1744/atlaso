@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import type { CanvasNode } from '../../types';
 
@@ -16,14 +17,14 @@ export function NodeConfigDrawer({ node, onClose, onUpdate }: NodeConfigDrawerPr
     onClose();
   };
 
-  return (
+  return createPortal(
     <>
       <div
-        className="fixed inset-0 bg-black/50 z-40"
+        className="fixed inset-0 bg-black/50 z-[90]"
         onClick={onClose}
       />
 
-      <div className="fixed right-0 top-0 h-full w-96 bg-slate-900 border-l border-slate-700 shadow-2xl z-50 flex flex-col">
+      <div className="fixed right-0 top-0 h-full w-80 bg-slate-900 border-l border-slate-700 shadow-2xl z-[100] flex flex-col">
         <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
           <h2 className="font-semibold text-slate-200">Configure Component</h2>
           <button
@@ -127,12 +128,13 @@ export function NodeConfigDrawer({ node, onClose, onUpdate }: NodeConfigDrawerPr
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 px-4 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-500 transition-colors"
+            className="flex-1 px-4 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-500 transition-colors text-balance"
           >
             Save Changes
           </button>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

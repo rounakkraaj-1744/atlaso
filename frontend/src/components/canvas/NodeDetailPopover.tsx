@@ -8,16 +8,18 @@ interface NodeDetailPopoverProps {
     position: { x: number; y: number };
 }
 
+import { createPortal } from 'react-dom';
+
 export function NodeDetailPopover({ node, onClose, onEdit, position }: NodeDetailPopoverProps) {
-    return (
+    return createPortal(
         <>
             <div
-                className="fixed inset-0 z-40"
+                className="fixed inset-0 z-[90]"
                 onClick={onClose}
             />
 
             <div
-                className="fixed z-50 w-80 bg-slate-800 border-2 border-slate-700 rounded-lg shadow-2xl"
+                className="fixed z-[100] w-80 bg-slate-800 border-2 border-slate-700 rounded-lg shadow-2xl"
                 style={{
                     left: `${position.x}px`,
                     top: `${position.y}px`,
@@ -105,6 +107,7 @@ export function NodeDetailPopover({ node, onClose, onEdit, position }: NodeDetai
                     </button>
                 </div>
             </div>
-        </>
+        </>,
+        document.body
     );
 }
