@@ -148,13 +148,14 @@ export class ArchitectureService {
 
     // Find root by traversing up
     let rootId = id;
-    let current = architecture;
-    while (current.parentId) {
+    let current: { parentId: string | null } | null = architecture;
+    while (current?.parentId) {
       rootId = current.parentId;
-      current = await this.prisma.architecture.findUnique({
+      const next = await this.prisma.architecture.findUnique({
         where: { id: rootId },
       });
-      if (!current) break;
+      if (!next) break;
+      current = next;
     }
 
     // Get all versions

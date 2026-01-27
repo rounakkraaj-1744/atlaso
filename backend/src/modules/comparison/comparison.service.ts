@@ -8,6 +8,7 @@ export interface DiffResult {
     modifiedNodes: string[];
     addedConnections: string[];
     removedConnections: string[];
+    [key: string]: string[]; // Index signature for JSON compatibility
 }
 
 export interface ComparisonMetrics {
@@ -17,6 +18,7 @@ export interface ComparisonMetrics {
     warningsAfter: number;
     verdictBefore: string;
     verdictAfter: string;
+    [key: string]: number | string; // Index signature for JSON compatibility
 }
 
 @Injectable()
@@ -36,11 +38,11 @@ export class ComparisonService {
         if (!modified) throw new NotFoundException(`Architecture ${modifiedId} not found`);
 
         const baseNodes = base.nodes as unknown as CanvasNode[];
-        const modifiedNodes = modified.nodes as unknown as CanvasNode[];
+        const modifiedNodesData = modified.nodes as unknown as CanvasNode[];
         const baseEdges = base.edges as unknown as Connection[];
         const modifiedEdges = modified.edges as unknown as Connection[];
 
-        const diff = this.calculateDiff(baseNodes, modifiedNodes, baseEdges, modifiedEdges);
+        const diff = this.calculateDiff(baseNodes, modifiedNodesData, baseEdges, modifiedEdges);
 
         // Get latest evaluations for metrics comparison
         const [baseEval, modifiedEval] = await Promise.all([
@@ -70,7 +72,7 @@ export class ComparisonService {
             data: {
                 baseArchitectureId: baseId,
                 modifiedArchitectureId: modifiedId,
-                deltaSummary: { diff, metrics },
+                deltaSummary: { diff, metrics } as unknown as object,
             },
         });
 
@@ -89,42 +91,42 @@ export class ComparisonService {
      */
     private calculateDiff(
         baseNodes: CanvasNode[],
-        modifiedNodes: CanvasNode[],
+        targetNodes: CanvasNode[],
         baseEdges: Connection[],
-        modifiedEdges: Connection[],
+        targetEdges: Connection[],
     ): DiffResult {
         const baseNodeIds = new Set(baseNodes.map((n) => n.id));
-        const modifiedNodeIds = new Set(modifiedNodes.map((n) => n.id));
+        const targetNodeIds = new Set(targetNodes.map((n) => n.id));
         const baseEdgeIds = new Set(baseEdges.map((e) => e.id));
-        const modifiedEdgeIds = new Set(modifiedEdges.map((e) => e.id));
+        const targetEdgeIds = new Set(targetEdges.map((e) => e.id));
 
         // Node changes
-        const addedNodes = [...modifiedNodeIds].filter((id) => !baseNodeIds.has(id));
-        const removedNodes = [...baseNodeIds].filter((id) => !modifiedNodeIds.has(id));
-        const modifiedNodes: string[] = [];
+        const addedNodes = [...targetNodeIds].filter((id) => !baseNodeIds.has(id));
+        const removedNodes = [...baseNodeIds].filter((id) => !targetNodeIds.has(id));
+        const changedNodes: string[] = [];
 
         // Check for modifications in common nodes
         baseNodes.forEach((baseNode) => {
-            const modNode = modifiedNodes.find((n: CanvasNode) => n.id === baseNode.id);
-            if (modNode) {
+            const targetNode = targetNodes.find((n) => n.id === baseNode.id);
+            if (targetNode) {
                 const hasConfigChange =
-                    baseNode.config.throughput !== modNode.config.throughput ||
-                    baseNode.config.latency !== modNode.config.latency ||
-                    baseNode.config.scalingFactor !== modNode.config.scalingFactor;
+                    baseNode.config.throughput !== targetNode.config.throughput ||
+                    baseNode.config.latency !== targetNode.config.latency ||
+                    baseNode.config.scalingFactor !== targetNode.config.scalingFactor;
                 if (hasConfigChange) {
-                    modifiedNodes.push(baseNode.id);
+                    changedNodes.push(baseNode.id);
                 }
             }
         });
 
         // Edge changes
-        const addedConnections = [...modifiedEdgeIds].filter((id) => !baseEdgeIds.has(id));
-        const removedConnections = [...baseEdgeIds].filter((id) => !modifiedEdgeIds.has(id));
+        const addedConnections = [...targetEdgeIds].filter((id) => !baseEdgeIds.has(id));
+        const removedConnections = [...baseEdgeIds].filter((id) => !targetEdgeIds.has(id));
 
         return {
             addedNodes,
             removedNodes,
-            modifiedNodes,
+            modifiedNodes: changedNodes,
             addedConnections,
             removedConnections,
         };
