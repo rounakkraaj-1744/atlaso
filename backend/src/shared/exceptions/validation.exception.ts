@@ -1,7 +1,3 @@
-/**
- * Validation Exception - Custom validation error handling
- */
-
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export interface ValidationError {
@@ -24,16 +20,10 @@ export class ValidationException extends HttpException {
         );
     }
 
-    /**
-     * Create from a single error
-     */
     static fromField(field: string, message: string, value?: unknown): ValidationException {
         return new ValidationException([{ field, message, value }]);
     }
 
-    /**
-     * Create from multiple field errors
-     */
     static fromFields(errors: Record<string, string>): ValidationException {
         return new ValidationException(
             Object.entries(errors).map(([field, message]) => ({ field, message })),
@@ -41,9 +31,6 @@ export class ValidationException extends HttpException {
     }
 }
 
-/**
- * Schema validation exception for architecture validation
- */
 export class SchemaValidationException extends ValidationException {
     constructor(errors: ValidationError[]) {
         super(errors);

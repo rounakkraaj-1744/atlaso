@@ -1,15 +1,5 @@
-import {
-    IsString,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsEnum,
-    Min,
-    Max,
-    ValidateNested,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsEnum, Min, Max, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-
 class SystemConstraintsDto {
     @IsNumber()
     @Min(1)

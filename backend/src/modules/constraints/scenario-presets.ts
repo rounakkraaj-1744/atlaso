@@ -1,10 +1,4 @@
-/**
- * Scenario Presets
- * Matches frontend scenario patterns
- */
-
 import type { SystemConstraints } from '../../shared/types';
-
 export interface ScenarioPreset {
     type: 'normal' | 'flash-sale' | 'black-friday' | 'incident';
     name: string;

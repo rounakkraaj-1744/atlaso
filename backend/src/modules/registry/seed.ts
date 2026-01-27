@@ -1,8 +1,3 @@
-/**
- * Component Registry Seed Data
- * Matches frontend/src/data/components.ts
- */
-
 export interface SeedComponent {
     key: string;
     displayName: string;
@@ -22,7 +17,6 @@ export interface SeedComponent {
 }
 
 export const componentSeeds: SeedComponent[] = [
-    // Traffic & Networking
     {
         key: 'load-balancer',
         displayName: 'Load Balancer',
@@ -71,7 +65,6 @@ export const componentSeeds: SeedComponent[] = [
         defaultLatency: 10,
         description: 'Edge caching. Reduces origin load for static/cacheable content.',
     },
-    // Compute
     {
         key: 'api-server',
         displayName: 'API Server',
@@ -120,7 +113,6 @@ export const componentSeeds: SeedComponent[] = [
         defaultLatency: 1000,
         description: 'Scheduled batch processing. Time-triggered execution.',
     },
-    // Messaging & Streaming
     {
         key: 'kafka',
         displayName: 'Kafka',
@@ -269,9 +261,6 @@ export const componentSeeds: SeedComponent[] = [
     },
 ];
 
-/**
- * Category display names
- */
 export const categoryNames: Record<string, string> = {
     NETWORKING: 'Traffic & Networking',
     COMPUTE: 'Compute',

@@ -1,7 +1,3 @@
-/**
- * Common Response DTOs
- */
-
 export interface ApiResponse<T> {
     success: boolean;
     data?: T;
@@ -36,12 +32,7 @@ export function createErrorResponse(error: string): ApiResponse<null> {
     };
 }
 
-export function createPaginatedResponse<T>(
-    data: T[],
-    page: number,
-    limit: number,
-    total: number
-): PaginatedResponse<T> {
+export function createPaginatedResponse<T>( data: T[], page: number, limit: number, total: number ): PaginatedResponse<T> {
     return {
         success: true,
         data,

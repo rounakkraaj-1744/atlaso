@@ -8,44 +8,32 @@ import { Verdict as PrismaVerdict, Severity as PrismaSeverity } from '@prisma/cl
 export class EvaluationService {
     constructor(private readonly prisma: PrismaService) { }
 
-    /**
-     * Run evaluation on an architecture with a scenario
-     */
-    async runEvaluation(architectureId: string, scenarioId: string): Promise<{
-        evaluationRun: unknown;
-        output: EvaluationOutput;
-    }> {
-        // Get architecture
+    async runEvaluation(architectureId: string, scenarioId: string): Promise<{ evaluationRun: unknown; output: EvaluationOutput; }> {
         const architecture = await this.prisma.architecture.findUnique({
             where: { id: architectureId },
         });
-        if (!architecture) {
+        if (!architecture)
             throw new NotFoundException(`Architecture ${architectureId} not found`);
-        }
 
-        // Get scenario
         const scenario = await this.prisma.scenario.findUnique({
             where: { id: scenarioId },
         });
-        if (!scenario) {
+
+        if (!scenario)
             throw new NotFoundException(`Scenario ${scenarioId} not found`);
-        }
 
         const nodes = architecture.nodes as unknown as CanvasNode[];
         const edges = architecture.edges as unknown as Connection[];
         const constraints = scenario.constraints as unknown as SystemConstraints;
 
-        // Run analysis
         const output = analyzeSystem(nodes, edges, constraints);
 
-        // Map verdict to Prisma enum
         const verdictMap: Record<string, PrismaVerdict> = {
             pass: 'PASS',
             risky: 'RISKY',
             fail: 'FAIL',
         };
 
-        // Map severity to Prisma enum
         const severityMap: Record<Severity, PrismaSeverity> = {
             low: 'LOW',
             medium: 'MEDIUM',
@@ -53,7 +41,6 @@ export class EvaluationService {
             critical: 'CRITICAL',
         };
 
-        // Create evaluation run
         const evaluationRun = await this.prisma.evaluationRun.create({
             data: {
                 architectureId,
@@ -63,8 +50,7 @@ export class EvaluationService {
                 maxThroughPutRps: output.maxThroughputRps,
             },
         });
-
-        // Create bottlenecks
+  
         for (let i = 0; i < output.analysis.bottlenecks.length; i++) {
             const bottleneck = output.analysis.bottlenecks[i];
             await this.prisma.bottlenecks.create({
@@ -84,7 +70,6 @@ export class EvaluationService {
             });
         }
 
-        // Create explanations for warnings
         for (const warning of output.analysis.warnings) {
             await this.prisma.explanations.create({
                 data: {
@@ -96,7 +81,6 @@ export class EvaluationService {
             });
         }
 
-        // Create explanations for assumptions
         for (const assumption of output.analysis.assumptions) {
             await this.prisma.explanations.create({
                 data: {
@@ -119,20 +103,10 @@ export class EvaluationService {
         };
     }
 
-    /**
-     * Run evaluation inline (without persisting to DB)
-     */
-    analyzeInline(
-        nodes: CanvasNode[],
-        edges: Connection[],
-        constraints: SystemConstraints,
-    ): EvaluationOutput {
+    analyzeInline(nodes: CanvasNode[], edges: Connection[], constraints: SystemConstraints): EvaluationOutput {
         return analyzeSystem(nodes, edges, constraints);
     }
 
-    /**
-     * Get evaluation by ID
-     */
     async findOne(id: string) {
         const evaluation = await this.prisma.evaluationRun.findUnique({
             where: { id },
@@ -148,16 +122,12 @@ export class EvaluationService {
             },
         });
 
-        if (!evaluation) {
+        if (!evaluation)
             throw new NotFoundException(`Evaluation ${id} not found`);
-        }
 
         return evaluation;
     }
 
-    /**
-     * Get evaluations for an architecture
-     */
     async findByArchitecture(architectureId: string, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
 
@@ -181,13 +151,9 @@ export class EvaluationService {
         };
     }
 
-    /**
-     * Delete evaluation
-     */
     async remove(id: string) {
         await this.findOne(id);
 
-        // Delete related records first
         await this.prisma.bottlenecks.deleteMany({ where: { evaluationRunId: id } });
         await this.prisma.explanations.deleteMany({ where: { evaluationRunId: id } });
 

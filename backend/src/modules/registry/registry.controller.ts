@@ -1,18 +1,12 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { RegistryService } from './registry.service';
 import { createSuccessResponse } from '../../shared/dto';
-
 @Controller('registry')
 export class RegistryController {
   constructor(private readonly registryService: RegistryService) { }
 
   @Get('components')
-  async findAll(
-    @Query('category') category?: string,
-    @Query('vendor') vendor?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  async findAll( @Query('category') category?: string, @Query('vendor') vendor?: string, @Query('page') page?: string, @Query('limit') limit?: string ) {
     const result = await this.registryService.findAll({
       category,
       vendor,

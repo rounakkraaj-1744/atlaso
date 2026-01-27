@@ -1,13 +1,4 @@
-import {
-    IsString,
-    IsNotEmpty,
-    IsArray,
-    IsBoolean,
-    IsNumber,
-    IsEnum,
-    IsOptional,
-    Min,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, IsBoolean, IsNumber, IsOptional, Min } from 'class-validator';
 
 export class CreateComponentDefinitionDto {
     @IsString()
@@ -56,7 +47,6 @@ export class CreateComponentDefinitionDto {
     @IsOptional()
     isExperimental?: boolean;
 
-    // Extended fields for frontend compatibility
     @IsNumber()
     @Min(0)
     defaultThroughput: number;

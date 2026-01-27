@@ -1,13 +1,4 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Param,
-    Delete,
-    Query,
-    ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query, ParseUUIDPipe } from '@nestjs/common';
 import { EvaluationService } from './evaluation.service';
 import { RunEvaluationDto, AnalyzeInlineDto } from './dto';
 import { createSuccessResponse } from '../../shared/dto';
@@ -43,11 +34,7 @@ export class EvaluationController {
     }
 
     @Get('architecture/:id')
-    async findByArchitecture(
-        @Param('id', ParseUUIDPipe) id: string,
-        @Query('page') page?: string,
-        @Query('limit') limit?: string,
-    ) {
+    async findByArchitecture( @Param('id', ParseUUIDPipe) id: string, @Query('page') page?: string, @Query('limit') limit?: string ) {
         const result = await this.evaluationService.findByArchitecture(
             id,
             page ? parseInt(page, 10) : 1,

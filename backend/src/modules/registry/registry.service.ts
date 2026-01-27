@@ -1,21 +1,12 @@
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../shared/database';
 import { componentSeeds, categoryNames, type SeedComponent } from './seed';
-import {
-  ComponentCategory,
-  Vendor,
-  DataFlowType,
-  ScalingModel,
-  FailureMode,
-} from '@prisma/client';
+import { ComponentCategory, Vendor, DataFlowType, ScalingModel, FailureMode } from '@prisma/client';
 
 @Injectable()
 export class RegistryService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) { }
 
-  /**
-   * Seed components on module initialization if database is empty
-   */
   async onModuleInit() {
     const count = await this.prisma.componentDefinition.count();
     if (count === 0) {
@@ -25,9 +16,6 @@ export class RegistryService implements OnModuleInit {
     }
   }
 
-  /**
-   * Seed all component definitions
-   */
   async seedComponents() {
     for (const component of componentSeeds) {
       await this.prisma.componentDefinition.upsert({
@@ -38,9 +26,6 @@ export class RegistryService implements OnModuleInit {
     }
   }
 
-  /**
-   * Map seed component to Prisma model
-   */
   private mapToDbComponent(component: SeedComponent) {
     return {
       key: component.key,
@@ -63,25 +48,15 @@ export class RegistryService implements OnModuleInit {
     };
   }
 
-  /**
-   * Get all components with optional filtering
-   */
-  async findAll(options?: {
-    category?: string;
-    vendor?: string;
-    page?: number;
-    limit?: number;
-  }) {
+  async findAll(options?: { category?: string; vendor?: string; page?: number; limit?: number; }) {
     const { category, vendor, page = 1, limit = 50 } = options || {};
     const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
-    if (category) {
+    if (category)
       where.category = category.toUpperCase();
-    }
-    if (vendor) {
+    if (vendor)
       where.vendor = vendor.toUpperCase();
-    }
 
     const [data, total] = await Promise.all([
       this.prisma.componentDefinition.findMany({
@@ -93,7 +68,6 @@ export class RegistryService implements OnModuleInit {
       this.prisma.componentDefinition.count({ where }),
     ]);
 
-    // Map to frontend-compatible format
     const mappedData = data.map((c) => this.mapToFrontendComponent(c));
 
     return {
@@ -107,24 +81,17 @@ export class RegistryService implements OnModuleInit {
     };
   }
 
-  /**
-   * Get component by key
-   */
   async findByKey(key: string) {
     const component = await this.prisma.componentDefinition.findUnique({
       where: { key },
     });
 
-    if (!component) {
+    if (!component)
       throw new NotFoundException(`Component with key ${key} not found`);
-    }
 
     return this.mapToFrontendComponent(component);
   }
 
-  /**
-   * Get available categories
-   */
   getCategories() {
     return Object.entries(categoryNames).map(([key, name]) => ({
       key,
@@ -132,9 +99,6 @@ export class RegistryService implements OnModuleInit {
     }));
   }
 
-  /**
-   * Map DB component to frontend-compatible format
-   */
   private mapToFrontendComponent(component: {
     id: string;
     key: string;

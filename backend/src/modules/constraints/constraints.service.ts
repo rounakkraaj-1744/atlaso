@@ -8,23 +8,14 @@ import type { ScenarioType } from '@prisma/client';
 export class ConstraintsService {
   constructor(private readonly prisma: PrismaService) { }
 
-  /**
-   * Get all built-in scenario presets
-   */
   getPresets(): ScenarioPreset[] {
     return scenarioPresets;
   }
 
-  /**
-   * Get a specific preset by type
-   */
   getPreset(type: string): ScenarioPreset | undefined {
     return scenarioPresets.find((p) => p.type === type);
   }
 
-  /**
-   * Create a custom scenario
-   */
   async createScenario(dto: CreateScenarioDto) {
     return this.prisma.scenario.create({
       data: {
@@ -35,9 +26,6 @@ export class ConstraintsService {
     });
   }
 
-  /**
-   * Get all saved scenarios (custom scenarios from DB)
-   */
   async findAllScenarios(page = 1, limit = 20) {
     const skip = (page - 1) * limit;
 
@@ -61,24 +49,17 @@ export class ConstraintsService {
     };
   }
 
-  /**
-   * Get a scenario by ID
-   */
   async findScenario(id: string) {
     const scenario = await this.prisma.scenario.findUnique({
       where: { id },
     });
 
-    if (!scenario) {
+    if (!scenario)
       throw new NotFoundException(`Scenario with ID ${id} not found`);
-    }
 
     return scenario;
   }
 
-  /**
-   * Update a scenario
-   */
   async updateScenario(id: string, dto: UpdateScenarioDto) {
     const existing = await this.findScenario(id);
 
@@ -93,13 +74,9 @@ export class ConstraintsService {
     });
   }
 
-  /**
-   * Delete a scenario
-   */
   async deleteScenario(id: string) {
     await this.findScenario(id);
 
-    // Delete related evaluations first
     await this.prisma.evaluationRun.deleteMany({
       where: { scenarioId: id },
     });
@@ -109,9 +86,6 @@ export class ConstraintsService {
     });
   }
 
-  /**
-   * Get default constraints
-   */
   getDefaultConstraints() {
     const normalPreset = this.getPreset('normal');
     return normalPreset?.constraints || {

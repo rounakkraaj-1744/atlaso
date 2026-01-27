@@ -1,14 +1,4 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Patch,
-    Param,
-    Delete,
-    Query,
-    ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe } from '@nestjs/common';
 import { ConstraintsService } from './constraints.service';
 import { CreateScenarioDto, UpdateScenarioDto } from './dto';
 import { createSuccessResponse } from '../../shared/dto';
@@ -26,9 +16,9 @@ export class ConstraintsController {
     @Get('presets/:type')
     getPreset(@Param('type') type: string) {
         const preset = this.constraintsService.getPreset(type);
-        if (!preset) {
+        if (!preset)
             return createSuccessResponse(null, 'Preset not found');
-        }
+
         return createSuccessResponse(preset);
     }
 
@@ -45,10 +35,7 @@ export class ConstraintsController {
     }
 
     @Get()
-    async findAll(
-        @Query('page') page?: string,
-        @Query('limit') limit?: string,
-    ) {
+    async findAll( @Query('page') page?: string, @Query('limit') limit?: string ) {
         const result = await this.constraintsService.findAllScenarios(
             page ? parseInt(page, 10) : 1,
             limit ? parseInt(limit, 10) : 20,
@@ -67,10 +54,7 @@ export class ConstraintsController {
     }
 
     @Patch(':id')
-    async update(
-        @Param('id', ParseUUIDPipe) id: string,
-        @Body() dto: UpdateScenarioDto,
-    ) {
+    async update( @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateScenarioDto ) {
         const scenario = await this.constraintsService.updateScenario(id, dto);
         return createSuccessResponse(scenario, 'Scenario updated successfully');
     }

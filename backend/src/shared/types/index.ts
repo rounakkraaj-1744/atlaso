@@ -1,15 +1,9 @@
-/**
- * Shared Types - Aligned with frontend types
- */
-
-// Component types matching frontend
 export type ComponentCategory =
     | 'traffic'
     | 'compute'
     | 'messaging'
     | 'caching'
     | 'observability';
-
 export type ComponentType =
     | 'load-balancer'
     | 'api-gateway'
@@ -26,20 +20,12 @@ export type ComponentType =
     | 'metrics'
     | 'logs'
     | 'tracing';
-
 export type ConnectionType = 'sync' | 'async';
-
 export type AssumptionSource = 'default' | 'user-provided' | 'heuristic';
-
 export type VisualPriority = 'critical' | 'normal' | 'background';
-
 export type ScenarioPresetType = 'normal' | 'flash-sale' | 'black-friday' | 'incident' | 'custom';
-
 export type Severity = 'low' | 'medium' | 'high' | 'critical';
-
 export type Verdict = 'pass' | 'risky' | 'fail';
-
-// Node configuration
 export interface NodeConfig {
     name: string;
     throughput: number;
@@ -48,14 +34,12 @@ export interface NodeConfig {
     failureBehavior: string;
     notes: string;
 }
-
 export interface ConfigAssumptions {
     throughput: AssumptionSource;
     latency: AssumptionSource;
     scalingFactor: AssumptionSource;
 }
 
-// Canvas Node (as stored in architecture)
 export interface CanvasNode {
     id: string;
     type: ComponentType;
@@ -66,7 +50,6 @@ export interface CanvasNode {
     visualPriority?: VisualPriority;
 }
 
-// Connection between nodes
 export interface Connection {
     id: string;
     sourceId: string;
@@ -77,7 +60,6 @@ export interface Connection {
     visualPriority?: VisualPriority;
 }
 
-// System Constraints
 export interface SystemConstraints {
     avgRPS: number;
     peakRPS: number;
@@ -89,14 +71,12 @@ export interface SystemConstraints {
     consumerLagTolerance: number;
 }
 
-// Failure Propagation Path
 export interface FailurePropagationPath {
     nodeIds: string[];
     severity: Severity;
     timeToFailure: number;
 }
 
-// Bottleneck Info
 export interface BottleneckInfo {
     nodeId: string;
     nodeName: string;
@@ -107,14 +87,12 @@ export interface BottleneckInfo {
     downstreamImpacts?: string[];
 }
 
-// Warning Info
 export interface WarningInfo {
     type: 'queue-growth' | 'latency-violation' | 'resource-exhaustion';
     message: string;
     timeToFailure?: number;
 }
 
-// Assumption Info
 export interface AssumptionInfo {
     nodeId: string;
     nodeName: string;
@@ -125,7 +103,6 @@ export interface AssumptionInfo {
     explanation: string;
 }
 
-// First Failure Info
 export interface FirstFailureInfo {
     nodeId: string;
     nodeName: string;
@@ -133,7 +110,6 @@ export interface FirstFailureInfo {
     reason: string;
 }
 
-// Analysis Result
 export interface AnalysisResult {
     verdict: Verdict;
     firstFailure?: FirstFailureInfo;
@@ -143,7 +119,6 @@ export interface AnalysisResult {
     assumptions: AssumptionInfo[];
 }
 
-// Suggestion
 export interface Suggestion {
     id: string;
     title: string;
@@ -152,7 +127,6 @@ export interface Suggestion {
     impact: Severity;
 }
 
-// Enum mappings for Prisma
 export const PrismaVerdictMap = {
     pass: 'PASS',
     risky: 'RISKY',
