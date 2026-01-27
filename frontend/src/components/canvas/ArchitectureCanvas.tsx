@@ -290,7 +290,8 @@ export function Canvas({
                         stroke={isSelected ? '#fbbf24' : strokeColor}
                         strokeWidth={isSelected ? 3 : 2}
                         fill="none"
-                        strokeDasharray={conn.type === 'async' ? '5,5' : '0'}
+                        strokeDasharray="10,10"
+                        className={conn.type === 'async' ? 'animate-flow-slow' : 'animate-flow'}
                         opacity={isSelected ? 1 : 0.7}
                     />
                     <circle cx={x2} cy={y2} r={isSelected ? 6 : 4} fill={isSelected ? '#fbbf24' : strokeColor} />

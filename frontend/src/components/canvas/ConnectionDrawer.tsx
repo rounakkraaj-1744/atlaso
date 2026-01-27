@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import type { Connection } from '../../types';
 
@@ -13,7 +14,7 @@ export function ConnectionDrawer({ connection, onClose, onUpdate, onDelete }: Co
   const [config, setConfig] = useState(connection);
 
   const handleSave = () => {
-    if (onUpdate) 
+    if (onUpdate)
       onUpdate(config);
     onClose();
   };
@@ -24,11 +25,11 @@ export function ConnectionDrawer({ connection, onClose, onUpdate, onDelete }: Co
     onClose();
   };
 
-  return (
+  return createPortal(
     <>
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 z-[90]" onClick={onClose} />
 
-      <div className="fixed right-0 top-0 h-full w-96 bg-slate-900 border-l border-slate-700 shadow-2xl z-50 flex flex-col">
+      <div className="fixed right-0 top-0 h-full w-80 bg-slate-900 border-l border-slate-700 shadow-2xl z-[100] flex flex-col">
         <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
           <h2 className="font-semibold text-slate-200">Connection Settings</h2>
           <button onClick={onClose} className="p-1 hover:bg-slate-800 rounded transition-colors">
@@ -104,6 +105,7 @@ export function ConnectionDrawer({ connection, onClose, onUpdate, onDelete }: Co
           </button>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
