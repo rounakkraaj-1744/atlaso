@@ -83,7 +83,7 @@ export function LoadArchitectureModal({ isOpen, onClose, onLoad }: LoadArchitect
                                                 <GitBranch className="w-3 h-3" />
                                                 v{arch.version}
                                             </span>
-                                            <span>{arch.nodes.length} nodes</span>
+                                            <span>{arch.nodes?.length || 0} nodes</span>
                                         </div>
                                     </div>
                                     <button

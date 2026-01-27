@@ -46,6 +46,8 @@ export class ArchitectureService {
           description: true,
           version: true,
           parentId: true,
+          nodes: true,
+          edges: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -86,7 +88,7 @@ export class ArchitectureService {
       where: { id },
     });
 
-    if (!existing) 
+    if (!existing)
       throw new NotFoundException(`Architecture with ID ${id} not found`);
 
     const { name, description, nodes, edges } = updateArchitectureDto;

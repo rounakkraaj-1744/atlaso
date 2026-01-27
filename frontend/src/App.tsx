@@ -89,6 +89,10 @@ function AppContent() {
   };
 
   const handleSave = async (name: string, description: string) => {
+    console.log('[Save] Saving architecture:', { name, nodesCount: nodes.length, edgesCount: connections.length });
+    console.log('[Save] Nodes:', nodes);
+    console.log('[Save] Edges:', connections);
+
     try {
       await createArchitecture.mutateAsync({
         name,
@@ -104,15 +108,19 @@ function AppContent() {
   };
 
   const handleLoad = (architecture: Architecture) => {
+    console.log('[Load] Loading architecture:', architecture);
+    console.log('[Load] Nodes:', architecture.nodes);
+    console.log('[Load] Edges:', architecture.edges);
+
     resetCanvas();
 
     // Load nodes
-    architecture.nodes.forEach((node: CanvasNode) => {
+    (architecture.nodes || []).forEach((node: CanvasNode) => {
       addNode(node);
     });
 
     // Load edges (map back to connections format)
-    architecture.edges.forEach((edge: Connection) => {
+    (architecture.edges || []).forEach((edge: Connection) => {
       addConnection({
         ...edge,
         sourceId: edge.sourceId,
