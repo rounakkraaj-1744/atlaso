@@ -1,12 +1,9 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { useDrop } from 'react-dnd';
 import { ComponentNode } from './ComponentNode';
-import { NodeConfigDrawer } from './NodeConfigDrawer';
-import { ConnectionDrawer } from './ConnectionDrawer';
-import { Minimap } from './Minimap';
 import type { CanvasNode, ComponentType, Connection } from '../../types';
 import { componentRegistry } from '../../features/registry/data/components';
-import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, MousePointer2, Hand, MessageSquare, Square, Minus } from 'lucide-react';
 
 interface CanvasProps {
     nodes: CanvasNode[];
@@ -19,6 +16,11 @@ interface CanvasProps {
     onUpdateConnection?: (connection: Connection) => void;
     onDeleteConnection?: (connectionId: string) => void;
     onAddConnection?: (connection: Connection) => void;
+    selectedNode: CanvasNode | null;
+    setSelectedNode: (node: CanvasNode | null) => void;
+    selectedConnection: Connection | null;
+    setSelectedConnection: (conn: Connection | null) => void;
+    onOpenReplaceTechnology?: (node: CanvasNode) => void;
 }
 
 export function Canvas({
@@ -32,14 +34,19 @@ export function Canvas({
     onUpdateConnection,
     onDeleteConnection,
     onAddConnection,
+    selectedNode,
+    setSelectedNode,
+    selectedConnection,
+    setSelectedConnection,
+    onOpenReplaceTechnology,
 }: CanvasProps) {
+    void onUpdateNode;
+    void onUpdateConnection;
     const canvasRef = useRef<HTMLDivElement>(null);
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [scale, setScale] = useState(1);
     const [isPanning, setIsPanning] = useState(false);
     const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-    const [selectedNode, setSelectedNode] = useState<CanvasNode | null>(null);
-    const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
 
     // Connection creation state
     const [connectionSource, setConnectionSource] = useState<string | null>(null);
@@ -214,10 +221,6 @@ export function Canvas({
     }, []);
 
     const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        // Prevent default only if we are interacting with canvas to avoid blocking scroll elsewhere if needed
-        // But here we want to block scroll
-        // e.preventDefault(); 
-
         if (e.touches.length === 1 && isPanning && lastTouchRef.current) {
             const touch = e.touches[0];
             const dx = touch.clientX - lastTouchRef.current.x;
@@ -275,7 +278,7 @@ export function Canvas({
             const y2 = target.position.y + 40;
 
             const isSelected = selectedConnection?.id === conn.id;
-            const strokeColor = conn.type === 'async' ? '#3b82f6' : '#8b5cf6';
+            const strokeColor = conn.type === 'async' ? '#60a5fa' : '#a78bfa';
 
             return (
                 <g key={conn.id} style={{ cursor: 'pointer' }} onClick={() => handleConnectionClick(conn)}>
@@ -287,16 +290,16 @@ export function Canvas({
                     />
                     <path
                         d={`M ${x1} ${y1} C ${x1 + 50} ${y1}, ${x2 - 50} ${y2}, ${x2} ${y2}`}
-                        stroke={isSelected ? '#fbbf24' : strokeColor}
+                        stroke={isSelected ? '#38bdf8' : strokeColor}
                         strokeWidth={isSelected ? 3 : 2}
                         fill="none"
                         strokeDasharray="10,10"
                         className={conn.type === 'async' ? 'animate-flow-slow' : 'animate-flow'}
                         opacity={isSelected ? 1 : 0.7}
                     />
-                    <circle cx={x2} cy={y2} r={isSelected ? 6 : 4} fill={isSelected ? '#fbbf24' : strokeColor} />
+                    <circle cx={x2} cy={y2} r={isSelected ? 6 : 4} fill={isSelected ? '#38bdf8' : strokeColor} />
                     {conn.hasRetry && (
-                        <circle cx={(x1 + x2) / 2} cy={(y1 + y2) / 2} r="6" fill="#fbbf24" stroke="#78350f" strokeWidth="2" />
+                        <circle cx={(x1 + x2) / 2} cy={(y1 + y2) / 2} r="5" fill="#38bdf8" stroke="#0f172a" strokeWidth="2" />
                     )}
                 </g>
             );
@@ -329,11 +332,10 @@ export function Canvas({
 
     return (
         <>
-            <div
-                ref={(node) => {
-                    drop(node);
-                    if (node) canvasRef.current = node;
-                }}
+            <div ref={(node) => {
+                drop(node);
+                if (node) canvasRef.current = node;
+            }}
                 className={`relative flex-1 h-full bg-slate-950 overflow-hidden select-none ${isPanning ? 'cursor-grabbing' : 'cursor-default'
                     } ${isOver ? 'bg-slate-900/50' : ''} ${isConnecting ? 'cursor-crosshair' : ''}`}
                 onWheel={handleWheel}
@@ -347,13 +349,10 @@ export function Canvas({
                 onClick={handleCanvasClick}
             >
                 <div
-                    className="absolute inset-0 opacity-20"
+                    className="absolute inset-0 opacity-[0.15]"
                     style={{
-                        backgroundImage: `
-              linear-gradient(to right, #1e293b 1px, transparent 1px),
-              linear-gradient(to bottom, #1e293b 1px, transparent 1px)
-            `,
-                        backgroundSize: `${40 * scale}px ${40 * scale}px`,
+                        backgroundImage: `radial-gradient(circle at 1px 1px, #64748b 1px, transparent 0)`,
+                        backgroundSize: `${32 * scale}px ${32 * scale}px`,
                         backgroundPosition: `${pan.x}px ${pan.y}px`,
                     }}
                 />
@@ -382,6 +381,7 @@ export function Canvas({
                             onEndConnection={handleEndConnection}
                             isConnecting={isConnecting}
                             connectionSource={connectionSource}
+                            onOpenReplaceTechnology={onOpenReplaceTechnology}
                         />
                     ))}
                 </div>
@@ -392,27 +392,46 @@ export function Canvas({
                     </div>
                 )}
 
-                <div className="absolute top-4 right-4 flex flex-col gap-2 z-40">
+                <div className="absolute top-6 right-6 flex flex-col gap-2 z-40">
                     <button
                         onClick={handleZoomIn}
-                        className="p-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
+                        className="p-2 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/10 transition-colors shadow-lg"
                         title="Zoom In"
                     >
-                        <ZoomIn className="w-5 h-5 text-slate-300" />
+                        <ZoomIn className="w-4 h-4 text-slate-300" />
                     </button>
                     <button
                         onClick={handleZoomOut}
-                        className="p-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
+                        className="p-2 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/10 transition-colors shadow-lg"
                         title="Zoom Out"
                     >
-                        <ZoomOut className="w-5 h-5 text-slate-300" />
+                        <ZoomOut className="w-4 h-4 text-slate-300" />
                     </button>
                     <button
                         onClick={handleResetView}
-                        className="p-2 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
+                        className="p-2 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/10 transition-colors shadow-lg"
                         title="Reset View"
                     >
-                        <Maximize2 className="w-5 h-5 text-slate-300" />
+                        <Maximize2 className="w-4 h-4 text-slate-300" />
+                    </button>
+                </div>
+
+                {/* Floating Toolbar (Left) */}
+                <div className="absolute top-1/2 left-6 -translate-y-1/2 flex flex-col gap-2 p-1.5 bg-[#09090b]/80 backdrop-blur-md border border-white/10 rounded-xl shadow-lg z-40">
+                    <button className="p-2 bg-blue-600 rounded-lg text-white shadow-sm" title="Select (V)">
+                        <MousePointer2 className="w-4 h-4" />
+                    </button>
+                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Hand Tool (H)">
+                        <Hand className="w-4 h-4" />
+                    </button>
+                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Comment (C)">
+                        <MessageSquare className="w-4 h-4" />
+                    </button>
+                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Rectangle (R)">
+                        <Square className="w-4 h-4" />
+                    </button>
+                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Line (L)">
+                        <Minus className="w-4 h-4" />
                     </button>
                 </div>
 
@@ -427,55 +446,26 @@ export function Canvas({
                     </div>
                 )}
 
-                <div className="absolute bottom-4 right-4 px-2 py-1 bg-slate-800 border border-slate-700 rounded-md">
-                    <span className="text-[10px] font-mono text-slate-400">{Math.round(scale * 100)}%</span>
+                <div className="absolute bottom-6 right-6 px-3 py-1.5 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-full shadow-lg">
+                    <span className="text-[10px] font-mono text-slate-300">{Math.round(scale * 100)}%</span>
                 </div>
 
                 {connections.length > 0 && (
-                    <div className="absolute bottom-4 left-4 p-2 bg-slate-800 border border-slate-700 rounded-md space-y-1.5">
-                        <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                    <div className="absolute bottom-6 left-6 p-3 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-xl space-y-2 shadow-lg">
+                        <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                             Connections
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-0.5 bg-purple-500"></div>
-                            <span className="text-[10px] text-slate-400">Synchronous</span>
+                            <div className="w-6 h-0.5 bg-purple-400/80"></div>
+                            <span className="text-[10px] text-slate-300 font-medium">Synchronous</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-0.5 bg-blue-500 border-dashed" style={{ borderTopWidth: '2px', borderTopStyle: 'dashed' }}></div>
-                            <span className="text-[10px] text-slate-400">Asynchronous</span>
+                            <div className="w-6 h-0.5 border-t-2 border-dashed border-blue-400/80"></div>
+                            <span className="text-[10px] text-slate-300 font-medium">Asynchronous</span>
                         </div>
                     </div>
                 )}
-
-                <Minimap
-                    nodes={nodes}
-                    connections={connections}
-                    pan={pan}
-                    scale={scale}
-                    onPan={setPan}
-                    onScale={setScale}
-                />
             </div>
-
-            {selectedNode && (
-                <NodeConfigDrawer
-                    node={selectedNode}
-                    onClose={() => setSelectedNode(null)}
-                    onUpdate={onUpdateNode}
-                />
-            )}
-
-            {selectedConnection && onUpdateConnection && onDeleteConnection && (
-                <ConnectionDrawer
-                    connection={selectedConnection}
-                    onClose={() => setSelectedConnection(null)}
-                    onUpdate={onUpdateConnection}
-                    onDelete={() => {
-                        onDeleteConnection(selectedConnection.id);
-                        setSelectedConnection(null);
-                    }}
-                />
-            )}
         </>
     );
 }

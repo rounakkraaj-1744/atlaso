@@ -1,104 +1,75 @@
-import { Server, Database, Cloud, Network, Cpu, HardDrive, Workflow, Activity, BarChart3, Box } from 'lucide-react';
+import {
+  Server, Database, Cloud, Network, Cpu, HardDrive, Workflow, Activity, BarChart3, Box,
+  Shield, Key, BrainCircuit, Bot, Globe, Mail, MessageSquare, CreditCard,
+  TerminalSquare, Layers, Lock, Clock, Zap, Search, Fingerprint, LineChart, FileText
+} from 'lucide-react';
 import type { Vendor } from '../../types/registry';
 
 interface ComponentIconRendererProps {
   type: string;
-  vendor: Vendor;
+  vendor?: Vendor;
   size?: number;
   className?: string;
 }
 
-export function ComponentIconRenderer({ type, vendor, size = 20, className = '' }: ComponentIconRendererProps) {
+export function ComponentIconRenderer({ type, size = 20, className = '' }: ComponentIconRendererProps) {
   const iconProps = {
     width: size,
     height: size,
-    className: `${className} ${getVendorColor(vendor)}`,
+    className: `${className} text-slate-300`,
   };
 
   const Icon = getIconComponent(type);
 
   return (
-    <div className={`p-1.5 rounded ${getVendorBgColor(vendor)} ${getVendorBorderColor(vendor)} border`}>
+    <div className="p-1.5 rounded bg-white/[0.03] border border-white/10 shadow-sm flex items-center justify-center">
       <Icon {...iconProps} />
     </div>
   );
 }
 
 function getIconComponent(type: string) {
-  if (type.includes('lambda') || type.includes('functions'))
-    return Cpu;
-  if (type.includes('alb') || type.includes('nlb') || type.includes('gateway'))
-    return Network;
-  if (type.includes('cloudfront') || type.includes('cdn') || type.includes('front-door'))
-    return Cloud;
-  if (type.includes('ecs') || type.includes('eks') || type.includes('gke') || type.includes('aks') || type.includes('container'))
-    return Box;
-  if (type.includes('sqs') || type.includes('sns') || type.includes('service-bus'))
-    return Workflow;
-  if (type.includes('kinesis') || type.includes('kafka') || type.includes('pub-sub') || type.includes('event'))
-    return Activity;
-  if (type.includes('redis') || type.includes('cache') || type.includes('memorystore'))
-    return Database;
-  if (type.includes('rds') || type.includes('sql') || type.includes('postgres') || type.includes('dynamodb') || type.includes('cosmos') || type.includes('firestore') || type.includes('mongodb'))
-    return Database;
-  if (type.includes('s3') || type.includes('storage') || type.includes('blob'))
-    return HardDrive;
-  if (type.includes('prometheus') || type.includes('grafana'))
-    return BarChart3;
-  if (type.includes('nginx') || type.includes('haproxy') || type.includes('load-balancing'))
-    return Network;
-  if (type.includes('elasticsearch'))
-    return BarChart3;
-  if (type.includes('rabbitmq'))
-    return Workflow;
+  if (type.includes('gpu')) return Zap;
+  if (type.includes('function') || type.includes('lambda')) return Cpu;
+  if (type.includes('container') || type.includes('worker') || type.includes('job')) return Box;
+  if (type.includes('vm')) return Server;
 
-  return Server;
-}
+  if (type.includes('dns') || type.includes('cdn')) return Globe;
+  if (type.includes('gateway') || type.includes('proxy') || type.includes('balancer') || type.includes('ingress') || type.includes('egress') || type.includes('mesh')) return Network;
+  if (type.includes('vpn') || type.includes('firewall')) return Shield;
 
-function getVendorColor(vendor: Vendor): string {
-  switch (vendor) {
-    case 'aws':
-      return 'text-orange-400';
-    case 'gcp':
-      return 'text-blue-400';
-    case 'azure':
-      return 'text-sky-400';
-    case 'oss':
-    case 'apache':
-      return 'text-slate-300';
-    default:
-      return 'text-slate-400';
-  }
-}
+  if (type.includes('storage') || type.includes('archive')) return HardDrive;
 
-function getVendorBgColor(vendor: Vendor): string {
-  switch (vendor) {
-    case 'aws':
-      return 'bg-orange-500/10';
-    case 'gcp':
-      return 'bg-blue-500/10';
-    case 'azure':
-      return 'bg-sky-500/10';
-    case 'oss':
-    case 'apache':
-      return 'bg-slate-700/30';
-    default:
-      return 'bg-slate-700/20';
-  }
-}
+  if (type.includes('search')) return Search;
+  if (type.includes('vector') || type.includes('graph')) return Network;
+  if (type.includes('time') || type.includes('series')) return Clock;
+  if (type.includes('db') || type.includes('warehouse')) return Database;
 
-function getVendorBorderColor(vendor: Vendor): string {
-  switch (vendor) {
-    case 'aws':
-      return 'border-orange-500/30';
-    case 'gcp':
-      return 'border-blue-500/30';
-    case 'azure':
-      return 'border-sky-500/30';
-    case 'oss':
-    case 'apache':
-      return 'border-slate-600/50';
-    default:
-      return 'border-slate-600/30';
-  }
+  if (type.includes('cache') || type.includes('session')) return Zap;
+
+  if (type.includes('queue') || type.includes('dlq') || type.includes('bus') || type.includes('pub-sub')) return Workflow;
+  if (type.includes('stream')) return Activity;
+
+  if (type.includes('auth') || type.includes('identity')) return Fingerprint;
+  if (type.includes('secret') || type.includes('kms') || type.includes('key')) return Key;
+  if (type.includes('cert') || type.includes('security')) return Lock;
+
+  if (type.includes('log')) return FileText;
+  if (type.includes('metric') || type.includes('monitor') || type.includes('alert')) return LineChart;
+  if (type.includes('trace')) return Activity;
+
+  if (type.includes('llm') || type.includes('model') || type.includes('prompt') || type.includes('inference')) return BrainCircuit;
+  if (type.includes('agent')) return Bot;
+
+  if (type.includes('payment')) return CreditCard;
+  if (type.includes('email')) return Mail;
+  if (type.includes('sms') || type.includes('push')) return MessageSquare;
+  if (type.includes('webhook') || type.includes('api')) return Cloud;
+
+  if (type.includes('etl') || type.includes('analytics') || type.includes('lake')) return BarChart3;
+
+  if (type.includes('pipeline') || type.includes('cicd')) return TerminalSquare;
+  if (type.includes('registry')) return Layers;
+
+  return Box;
 }

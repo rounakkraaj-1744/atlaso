@@ -57,6 +57,11 @@ export interface CanvasNode {
     id: string;
     type: ComponentType;
     position: { x: number; y: number };
+    providerMapping?: {
+        provider: 'Generic' | 'AWS' | 'Azure' | 'Google Cloud' | 'Cloudflare' | 'Civo' | string;
+        technology: string;
+        mappingStatus?: 'custom' | 'manual' | 'profile';
+    };
     config: {
         name: string;
         throughput: number;

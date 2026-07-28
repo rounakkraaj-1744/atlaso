@@ -1,7 +1,7 @@
-export type Vendor = 'aws' | 'gcp' | 'azure' | 'oss' | 'apache' | 'hashicorp' | 'confluent';
-export type Domain = 'messaging' | 'storage' | 'compute' | 'networking' | 'observability' | 'security' | 'analytics';
+export type Vendor = 'generic';
+export type Domain = 'compute' | 'networking' | 'storage' | 'databases' | 'cache' | 'messaging' | 'security' | 'observability' | 'ai' | 'external' | 'analytics' | 'devops';
 export type DataPattern = 'sync' | 'async' | 'batch' | 'stream' | 'realtime';
-export type ComponentPack = 'aws' | 'gcp' | 'azure' | 'oss';
+export type ComponentPack = 'core';
 
 export interface ComponentRegistryItem {
     type: string;
