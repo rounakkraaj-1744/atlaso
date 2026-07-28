@@ -24,11 +24,7 @@ export function ConstraintsTab({ constraints, onConstraintsChange }: Constraints
 
     return (
         <div className="space-y-4">
-            {/* Scenario Selector */}
-            <ScenarioSelector
-                currentScenario={currentScenario}
-                onScenarioChange={handleScenarioChange}
-            />
+            <ScenarioSelector currentScenario={currentScenario} onScenarioChange={handleScenarioChange}/>
 
             <div className="border-t border-border pt-4">
                 <div>
@@ -41,73 +37,34 @@ export function ConstraintsTab({ constraints, onConstraintsChange }: Constraints
                 </div>
 
                 <div className="space-y-3 mt-3">
-                    <Input
-                        label="Average RPS"
-                        type="number"
-                        value={constraints.avgRPS}
-                        onChange={(e) => handleConstraintUpdate({ avgRPS: Number(e.target.value) })}
-                        unit="rps"
-                    />
-
-                    <Input
-                        label="Peak RPS"
-                        type="number"
-                        value={constraints.peakRPS}
-                        onChange={(e) => handleConstraintUpdate({ peakRPS: Number(e.target.value) })}
-                        unit="rps"
-                    />
+                    <Input label="Average RPS" type="number" value={constraints.avgRPS} onChange={(e) => handleConstraintUpdate({ avgRPS: Number(e.target.value) })} unit="rps"/>
+                    <Input label="Peak RPS" type="number" value={constraints.peakRPS} onChange={(e) => handleConstraintUpdate({ peakRPS: Number(e.target.value) })} unit="rps"/>
 
                     <div className="space-y-1.5">
                         <label className="text-sm font-medium text-text-primary">
                             Read/Write Ratio
                         </label>
                         <div className="flex items-center gap-3">
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={constraints.readWriteRatio}
-                                onChange={(e) =>
+                            <input type="range" min="0" max="100" value={constraints.readWriteRatio} onChange={(e) =>
                                     handleConstraintUpdate({ readWriteRatio: Number(e.target.value) })
-                                }
-                                className="flex-1 h-2 bg-bg-tertiary rounded-lg appearance-none cursor-pointer accent-accent-blue"
-                            />
+                                } className="flex-1 h-2 bg-bg-tertiary rounded-lg appearance-none cursor-pointer accent-accent-blue"/>
                             <span className="text-sm font-mono text-text-primary w-16 text-right">
                                 {constraints.readWriteRatio}% R
                             </span>
                         </div>
                     </div>
 
-                    <Input
-                        label="Payload Size"
-                        type="number"
-                        value={constraints.payloadSize}
-                        onChange={(e) =>
+                    <Input label="Payload Size" type="number" value={constraints.payloadSize} onChange={(e) =>
                             handleConstraintUpdate({ payloadSize: Number(e.target.value) })
-                        }
-                        unit="KB"
-                    />
+                        } unit="KB"/>
 
-                    <Input
-                        label="SLA (p95 Latency)"
-                        type="number"
-                        value={constraints.slaLatency}
-                        onChange={(e) => handleConstraintUpdate({ slaLatency: Number(e.target.value) })}
-                        unit="ms"
-                    />
+                    <Input label="SLA (p95 Latency)" type="number" value={constraints.slaLatency} onChange={(e) => handleConstraintUpdate({ slaLatency: Number(e.target.value) })} unit="ms" />
 
-                    <Input
-                        label="Consumer Lag Tolerance"
-                        type="number"
-                        value={constraints.consumerLagTolerance}
-                        onChange={(e) =>
+                    <Input label="Consumer Lag Tolerance" type="number" value={constraints.consumerLagTolerance} onChange={(e) =>
                             handleConstraintUpdate({ consumerLagTolerance: Number(e.target.value) })
-                        }
-                        unit="ms"
-                    />
+                        } unit="ms" />
                 </div>
             </div>
         </div>
     );
 }
-

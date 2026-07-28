@@ -77,12 +77,10 @@ class ApiClient {
         }
     }
 
-    // Health
     async health(): Promise<{ status: string; database: string }> {
         return this.request('/health');
     }
 
-    // Architectures
     async getArchitectures(page = 1, limit = 20): Promise<PaginatedResponse<Architecture>> {
         return this.request(`/architecture?page=${page}&limit=${limit}`);
     }
@@ -126,7 +124,6 @@ class ApiClient {
         });
     }
 
-    // Components
     async getComponents(category?: string): Promise<PaginatedResponse<ComponentDefinition>> {
         const params = category ? `?category=${category}` : '';
         return this.request(`/registry/components${params}`);
@@ -136,12 +133,10 @@ class ApiClient {
         return this.request('/registry/categories');
     }
 
-    // Scenarios
     async getScenarioPresets(): Promise<ApiResponse<ScenarioPreset[]>> {
         return this.request('/scenarios/presets');
     }
 
-    // Evaluation
     async analyzeInline(data: {
         nodes: CanvasNode[];
         edges: Connection[];
@@ -163,7 +158,6 @@ class ApiClient {
         });
     }
 
-    // Comparisons
     async compareArchitectures(baseId: string, modifiedId: string): Promise<ApiResponse<{
         id: string;
         diff: Record<string, string[]>;

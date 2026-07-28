@@ -18,16 +18,13 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
         );
     }
 
-    // Group assumptions by impact level
     const highImpact = analysis.assumptions.filter(a => a.impact === 'high');
     const mediumImpact = analysis.assumptions.filter(a => a.impact === 'medium');
     const lowImpact = analysis.assumptions.filter(a => a.impact === 'low');
 
-    const renderAssumptionGroup = (
-        assumptions: typeof analysis.assumptions,
-        title: string
-    ) => {
-        if (assumptions.length === 0) return null;
+    const renderAssumptionGroup = ( assumptions: typeof analysis.assumptions, title: string ) => {
+        if (assumptions.length === 0) 
+            return null;
 
         return (
             <div>
@@ -36,17 +33,9 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
                 </h3>
                 <div className="space-y-2">
                     {assumptions.map((assumption, idx) => (
-                        <div
-                            key={idx}
-                            className="p-3 rounded-lg bg-bg-tertiary border border-border"
-                        >
+                        <div key={idx} className="p-3 rounded-lg bg-bg-tertiary border border-border">
                             <div className="flex items-start gap-3">
-                                <AssumptionIndicator
-                                    source={assumption.source}
-                                    explanation={assumption.explanation}
-                                    value={assumption.value}
-                                    field={assumption.field}
-                                />
+                                <AssumptionIndicator source={assumption.source} explanation={assumption.explanation} value={assumption.value} field={assumption.field}/>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="text-sm font-semibold text-text-primary">
@@ -75,7 +64,6 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
 
     return (
         <div className="space-y-6">
-            {/* Warning Banner */}
             <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <div className="flex items-start gap-2">
                     <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />

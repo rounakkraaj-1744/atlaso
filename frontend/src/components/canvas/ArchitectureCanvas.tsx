@@ -47,15 +47,13 @@ export function Canvas({
     const [scale, setScale] = useState(1);
     const [isPanning, setIsPanning] = useState(false);
     const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-
-    // Connection creation state
     const [connectionSource, setConnectionSource] = useState<string | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-    // Track mouse position for connection preview line
     useEffect(() => {
-        if (!isConnecting) return;
+        if (!isConnecting) 
+            return;
 
         const handleMouseMove = (e: MouseEvent) => {
             if (canvasRef.current) {
@@ -70,7 +68,6 @@ export function Canvas({
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, [isConnecting, pan, scale]);
 
-    // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -148,14 +145,16 @@ export function Canvas({
         accept: 'COMPONENT',
         drop: (item: { componentType: ComponentType }, monitor) => {
             const offset = monitor.getClientOffset();
-            if (!offset || !canvasRef.current) return;
+            if (!offset || !canvasRef.current) 
+                return;
 
             const rect = canvasRef.current.getBoundingClientRect();
             const x = (offset.x - rect.left - pan.x) / scale;
             const y = (offset.y - rect.top - pan.y) / scale;
 
             const definition = componentRegistry[item.componentType];
-            if (!definition) return;
+            if (!definition) 
+                return;
 
             const newNode: CanvasNode = {
                 id: `node-${Date.now()}`,
@@ -189,7 +188,6 @@ export function Canvas({
     const lastDistRef = useRef<number | null>(null);
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        // Allow pan with left click (if on background) or middle click or shift+click
         if (e.button === 0 || e.button === 1) {
             setIsPanning(true);
             setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
@@ -257,9 +255,11 @@ export function Canvas({
     };
 
     const getSourcePosition = () => {
-        if (!connectionSource) return null;
+        if (!connectionSource) 
+            return null;
         const sourceNode = nodes.find(n => n.id === connectionSource);
-        if (!sourceNode) return null;
+        if (!sourceNode) 
+            return null;
         return {
             x: sourceNode.position.x + 128,
             y: sourceNode.position.y + 40,
@@ -270,7 +270,8 @@ export function Canvas({
         return connections.map((conn) => {
             const source = nodes.find((n) => n.id === conn.sourceId);
             const target = nodes.find((n) => n.id === conn.targetId);
-            if (!source || !target) return null;
+            if (!source || !target) 
+                return null;
 
             const x1 = source.position.x + 128;
             const y1 = source.position.y + 40;
@@ -308,7 +309,8 @@ export function Canvas({
 
     const renderConnectionPreview = () => {
         const sourcePos = getSourcePosition();
-        if (!isConnecting || !sourcePos) return null;
+        if (!isConnecting || !sourcePos) 
+            return null;
 
         const x1 = sourcePos.x;
         const y1 = sourcePos.y;
@@ -334,7 +336,8 @@ export function Canvas({
         <>
             <div ref={(node) => {
                 drop(node);
-                if (node) canvasRef.current = node;
+                if (node) 
+                    canvasRef.current = node;
             }}
                 className={`relative flex-1 h-full bg-slate-950 overflow-hidden select-none ${isPanning ? 'cursor-grabbing' : 'cursor-default'
                     } ${isOver ? 'bg-slate-900/50' : ''} ${isConnecting ? 'cursor-crosshair' : ''}`}
@@ -348,14 +351,12 @@ export function Canvas({
                 onTouchEnd={handleTouchEnd}
                 onClick={handleCanvasClick}
             >
-                <div
-                    className="absolute inset-0 opacity-[0.15]"
+                <div className="absolute inset-0 opacity-[0.15]"
                     style={{
                         backgroundImage: `radial-gradient(circle at 1px 1px, #64748b 1px, transparent 0)`,
                         backgroundSize: `${32 * scale}px ${32 * scale}px`,
                         backgroundPosition: `${pan.x}px ${pan.y}px`,
-                    }}
-                />
+                    }} />
 
                 <div
                     style={{
@@ -364,25 +365,13 @@ export function Canvas({
                     }}
                     className="relative w-full h-full"
                 >
-                    <svg className="absolute inset-0 w-[5000px] h-[5000px]" style={{ pointerEvents: 'all' }}>
+                    <svg className="absolute inset-0 w-1250 h-1250" style={{ pointerEvents: 'all' }}>
                         {renderConnections()}
                         {renderConnectionPreview()}
                     </svg>
 
                     {nodes.map((node) => (
-                        <ComponentNode
-                            key={node.id}
-                            node={node}
-                            onClick={() => setSelectedNode(node)}
-                            onPositionChange={onNodePositionChange}
-                            onDelete={onDeleteNode}
-                            scale={scale}
-                            onStartConnection={handleStartConnection}
-                            onEndConnection={handleEndConnection}
-                            isConnecting={isConnecting}
-                            connectionSource={connectionSource}
-                            onOpenReplaceTechnology={onOpenReplaceTechnology}
-                        />
+                        <ComponentNode key={node.id} node={node} onClick={() => setSelectedNode(node)} onPositionChange={onNodePositionChange} onDelete={onDeleteNode} scale={scale} onStartConnection={handleStartConnection} onEndConnection={handleEndConnection} isConnecting={isConnecting} connectionSource={connectionSource} onOpenReplaceTechnology={onOpenReplaceTechnology}/>
                     ))}
                 </div>
 
@@ -393,30 +382,17 @@ export function Canvas({
                 )}
 
                 <div className="absolute top-6 right-6 flex flex-col gap-2 z-40">
-                    <button
-                        onClick={handleZoomIn}
-                        className="p-2 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/10 transition-colors shadow-lg"
-                        title="Zoom In"
-                    >
+                    <button onClick={handleZoomIn} className="p-2 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/10 transition-colors shadow-lg" title="Zoom In">
                         <ZoomIn className="w-4 h-4 text-slate-300" />
                     </button>
-                    <button
-                        onClick={handleZoomOut}
-                        className="p-2 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/10 transition-colors shadow-lg"
-                        title="Zoom Out"
-                    >
+                    <button onClick={handleZoomOut} className="p-2 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/10 transition-colors shadow-lg" title="Zoom Out">
                         <ZoomOut className="w-4 h-4 text-slate-300" />
                     </button>
-                    <button
-                        onClick={handleResetView}
-                        className="p-2 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/10 transition-colors shadow-lg"
-                        title="Reset View"
-                    >
+                    <button onClick={handleResetView} className="p-2 bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-lg hover:bg-white/10 transition-colors shadow-lg" title="Reset View" >
                         <Maximize2 className="w-4 h-4 text-slate-300" />
                     </button>
                 </div>
 
-                {/* Floating Toolbar (Left) */}
                 <div className="absolute top-1/2 left-6 -translate-y-1/2 flex flex-col gap-2 p-1.5 bg-[#09090b]/80 backdrop-blur-md border border-white/10 rounded-xl shadow-lg z-40">
                     <button className="p-2 bg-blue-600 rounded-lg text-white shadow-sm" title="Select (V)">
                         <MousePointer2 className="w-4 h-4" />

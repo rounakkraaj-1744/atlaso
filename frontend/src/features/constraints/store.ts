@@ -2,13 +2,8 @@ import { create } from 'zustand';
 import type { SystemConstraints, ScenarioPreset } from '../../types';
 
 interface ConstraintsState {
-    // Current constraints
     constraints: SystemConstraints;
-
-    // Scenario state
     activeScenario: ScenarioPreset | 'custom';
-
-    // Actions
     updateConstraints: (updates: Partial<SystemConstraints>) => void;
     setScenario: (scenario: ScenarioPreset, constraints: SystemConstraints) => void;
     resetConstraints: () => void;
@@ -32,7 +27,7 @@ export const useConstraintsStore = create<ConstraintsState>((set) => ({
     updateConstraints: (updates) =>
         set((state) => ({
             constraints: { ...state.constraints, ...updates },
-            activeScenario: 'custom', // Switch to custom when manually editing
+            activeScenario: 'custom',
         })),
 
     setScenario: (scenario, constraints) =>

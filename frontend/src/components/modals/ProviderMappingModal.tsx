@@ -7,7 +7,7 @@ import { cn } from '../../lib/cn';
 export type ProviderOption = 'AWS' | 'Azure' | 'Google Cloud' | 'Cloudflare' | 'Civo';
 export type ApplyMode = 'replace-all' | 'keep-manual' | 'preview';
 
-interface ProviderMappingModalProps {
+interface ProviderMappingDropdownProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -38,15 +38,18 @@ const modeOptions: Array<{
   },
 ];
 
-export function ProviderMappingModal({ isOpen, onClose }: ProviderMappingModalProps) {
+export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDropdownProps) {
   const [provider, setProvider] = useState<ProviderOption>('AWS');
+  const [isProviderOpen, setIsProviderOpen] = useState(false);
   const [applyMode, setApplyMode] = useState<ApplyMode>('keep-manual');
 
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'Enter') onClose();
+      if (e.key === 'Escape') 
+        onClose();
+      if (e.key === 'Enter') 
+        onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -55,11 +58,11 @@ export function ProviderMappingModal({ isOpen, onClose }: ProviderMappingModalPr
   const content = useMemo(() => {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 18 }}
+        initial={{ opacity: 0, scale: 0.94, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.97, y: 10 }}
+        exit={{ opacity: 0, scale: 0.97, y: 5 }}
         transition={{ type: 'spring', damping: 24, stiffness: 280 }}
-        className="w-[min(560px,calc(100vw-32px))] rounded-2xl border border-white/10 bg-[#0b0f16]/95 shadow-[0_30px_120px_rgba(0,0,0,0.65)] backdrop-blur-2xl overflow-hidden"
+        className="absolute right-0 top-[calc(100%+8px)] z-50 w-105 origin-top-right rounded-2xl border border-white/10 bg-[#0b0f16]/95 shadow-[0_30px_120px_rgba(0,0,0,0.65)] backdrop-blur-2xl overflow-hidden"
       >
         <div className="flex items-start justify-between gap-4 border-b border-white/5 px-6 py-5">
           <div>
@@ -77,26 +80,45 @@ export function ProviderMappingModal({ isOpen, onClose }: ProviderMappingModalPr
         </div>
 
         <div className="space-y-5 px-6 py-5">
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Provider</label>
-            <button className="flex h-10 w-full items-center justify-between rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-slate-200 transition-colors hover:bg-white/5">
+            <button 
+              onClick={() => setIsProviderOpen(!isProviderOpen)}
+              className="flex h-10 w-full items-center justify-between rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-slate-200 transition-colors hover:bg-white/5"
+            >
               <span>{provider}</span>
-              <ChevronDown className="h-4 w-4 text-slate-500" />
+              <ChevronDown className={cn("h-4 w-4 text-slate-500 transition-transform", isProviderOpen && "rotate-180")} />
             </button>
-            <div className="grid grid-cols-2 gap-2">
-              {providers.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setProvider(item)}
-                  className={cn(
-                    'rounded-lg border px-3 py-2 text-left text-sm transition-colors',
-                    provider === item ? 'border-blue-500/40 bg-blue-500/10 text-white' : 'border-white/5 bg-transparent hover:border-white/10 hover:bg-white/5 text-slate-300'
-                  )}
+            
+            <AnimatePresence>
+              {isProviderOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-xl border border-white/10 bg-[#0b0f16]/95 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl"
                 >
-                  {item}
-                </button>
-              ))}
-            </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {providers.map((item) => (
+                      <button
+                        key={item}
+                        onClick={() => {
+                          setProvider(item);
+                          setIsProviderOpen(false);
+                        }}
+                        className={cn(
+                          'rounded-lg border px-3 py-2 text-left text-sm transition-colors',
+                          provider === item ? 'border-blue-500/40 bg-blue-500/10 text-white' : 'border-white/5 bg-transparent hover:border-white/10 hover:bg-white/5 text-slate-300'
+                        )}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="space-y-2">
@@ -140,22 +162,10 @@ export function ProviderMappingModal({ isOpen, onClose }: ProviderMappingModalPr
     );
   }, [applyMode, onClose, provider]);
 
-  if (!isOpen) return null;
-
-  return createPortal(
+  return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[120] flex items-center justify-center px-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/60 backdrop-blur-md"
-          onClick={onClose}
-        />
-        {content}
-      </div>
-    </AnimatePresence>,
-    document.body
+      {isOpen && content}
+    </AnimatePresence>
   );
 }
 
@@ -185,10 +195,14 @@ export function ReplaceTechnologyModal({ isOpen, onClose, primitiveName = 'Authe
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'Enter') onClose();
-      if (e.key === 'ArrowDown') setActiveIndex((i) => Math.min(i + 1, techRows.length - 1));
-      if (e.key === 'ArrowUp') setActiveIndex((i) => Math.max(i - 1, 0));
+      if (e.key === 'Escape') 
+        onClose();
+      if (e.key === 'Enter') 
+        onClose();
+      if (e.key === 'ArrowDown') 
+        setActiveIndex((i) => Math.min(i + 1, techRows.length - 1));
+      if (e.key === 'ArrowUp') 
+        setActiveIndex((i) => Math.max(i - 1, 0));
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -200,7 +214,7 @@ export function ReplaceTechnologyModal({ isOpen, onClose, primitiveName = 'Authe
 
   return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[130] flex items-center justify-center px-4">
+      <div className="fixed inset-0 z-130 flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -251,7 +265,7 @@ export function ReplaceTechnologyModal({ isOpen, onClose, primitiveName = 'Authe
                     activeIndex === index ? 'border-blue-500/40 bg-blue-500/10' : 'border-transparent'
                   )}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-xs font-semibold text-slate-300">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-xs font-semibold text-slate-300">
                     {name.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">

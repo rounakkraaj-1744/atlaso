@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, Layers3, Play, Download, Moon, Command, Undo2, Redo2, Loader2, Upload } from 'lucide-react';
 import type { CanvasNode } from '../../types';
+import { ProviderMappingDropdown } from '../modals/ProviderMappingModal';
 
 interface TopNavigationProps {
   nodes: CanvasNode[];
@@ -11,16 +12,16 @@ interface TopNavigationProps {
   setIsRightPanelOpen: (open: boolean) => void;
   projectName?: string;
   isSimulating?: boolean;
-  onOpenProviderMapping?: () => void;
 }
 
-export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeftPanelOpen, isRightPanelOpen, setIsRightPanelOpen, projectName = "Untitled Architecture", isSimulating = false, onOpenProviderMapping }: TopNavigationProps) {
+export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeftPanelOpen, isRightPanelOpen, setIsRightPanelOpen, projectName = "Untitled Architecture", isSimulating = false }: TopNavigationProps) {
   void isLeftPanelOpen;
   void setIsLeftPanelOpen;
   void isRightPanelOpen;
   void setIsRightPanelOpen;
   const [activeProfile, setActiveProfile] = useState('AWS');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showProviderDropdown, setShowProviderDropdown] = useState(false);
 
   const profiles = ['Generic', 'AWS', 'Azure', 'Google Cloud', 'Cloudflare', 'Civo'];
 
@@ -90,14 +91,17 @@ export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeft
           )}
         </div>
 
-        <button
-          onClick={onOpenProviderMapping}
-          className="inline-flex items-center gap-2 rounded-md border border-blue-500/40 bg-transparent px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:-translate-y-0.5 hover:bg-blue-500/10 hover:text-white"
-        >
-          <Layers3 className="h-3.5 w-3.5 text-blue-400" />
-          Apply Provider Mapping
-          <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowProviderDropdown((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-md border border-blue-500/40 bg-transparent px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:-translate-y-0.5 hover:bg-blue-500/10 hover:text-white"
+          >
+            <Layers3 className="h-3.5 w-3.5 text-blue-400" />
+            Apply Provider Mapping
+            <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+          </button>
+          <ProviderMappingDropdown isOpen={showProviderDropdown} onClose={() => setShowProviderDropdown(false)} />
+        </div>
       </div>
 
       <div className="flex items-center gap-3">

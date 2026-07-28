@@ -61,7 +61,6 @@ interface ComponentNodeProps {
   isDimmed?: boolean;
   showInlineExplanation?: boolean;
   inlineExplanation?: string;
-  // Connection props
   onStartConnection?: (nodeId: string, side: 'left' | 'right') => void;
   onEndConnection?: (nodeId: string) => void;
   isConnecting?: boolean;
@@ -170,10 +169,9 @@ export function ComponentNode({
     e.preventDefault();
 
     if (isConnecting && connectionSource && connectionSource !== node.id) {
-      // Complete the connection
       onEndConnection?.(node.id);
-    } else if (!isConnecting && side === 'right') {
-      // Start a new connection (only from right port)
+    } 
+    else if (!isConnecting && side === 'right') {
       onStartConnection?.(node.id, side);
     }
   };
@@ -185,34 +183,37 @@ export function ComponentNode({
   const provider = node.providerMapping?.provider;
 
   const subtitleTone = useMemo(() => {
-    if (provider === 'AWS') return 'text-amber-300';
-    if (provider === 'Azure') return 'text-sky-300';
-    if (provider === 'Google Cloud') return 'text-blue-300';
-    if (provider === 'Cloudflare') return 'text-orange-300';
-    if (provider === 'Civo') return 'text-emerald-300';
-    if (node.providerMapping?.mappingStatus === 'manual' || node.providerMapping?.mappingStatus === 'custom') return 'text-emerald-300';
+    if (provider === 'AWS') 
+      return 'text-amber-300';
+    if (provider === 'Azure') 
+      return 'text-sky-300';
+    if (provider === 'Google Cloud') 
+      return 'text-blue-300';
+    if (provider === 'Cloudflare') 
+      return 'text-orange-300';
+    if (provider === 'Civo') 
+      return 'text-emerald-300';
+    if (node.providerMapping?.mappingStatus === 'manual' || node.providerMapping?.mappingStatus === 'custom') 
+      return 'text-emerald-300';
     return 'text-slate-500';
   }, [node.providerMapping?.mappingStatus, provider]);
 
-  // Can this node be a connection target?
   const canBeTarget = isConnecting && connectionSource && connectionSource !== node.id;
 
-  const domainBorder = node.status === 'healthy' && registryItem?.domain 
-    ? (domainBorderColors[registryItem.domain] || status.border) 
-    : status.border;
+  const domainBorder = node.status === 'healthy' && registryItem?.domain ? (domainBorderColors[registryItem.domain] || status.border) : status.border;
 
   return (
     <>
       {contextMenu &&
         createPortal(
           <AnimatePresence>
-            <div className="fixed inset-0 z-[115]" onClick={() => setContextMenu(null)} onContextMenu={() => setContextMenu(null)}>
+            <div className="fixed inset-0 z-115" onClick={() => setContextMenu(null)} onContextMenu={() => setContextMenu(null)}>
               <motion.div
                 initial={{ opacity: 0, scale: 0.96, y: -4 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98, y: -2 }}
                 transition={{ duration: 0.16 }}
-                className="fixed z-[116] w-60 overflow-hidden rounded-xl border border-white/10 bg-[#0b0f16]/95 shadow-2xl backdrop-blur-2xl"
+                className="fixed z-116 w-60 overflow-hidden rounded-xl border border-white/10 bg-[#0b0f16]/95 shadow-2xl backdrop-blur-2xl"
                 style={{ left: contextMenu.x, top: contextMenu.y }}
                 onClick={(e) => e.stopPropagation()}
                 onContextMenu={(e) => e.preventDefault()}
@@ -268,24 +269,16 @@ export function ComponentNode({
           } ${isHighlighted ? 'ring-2 ring-blue-500/50' : ''} ${canBeTarget ? 'ring-2 ring-green-400/50' : ''}`}
       >
         {onDelete && (
-          <button
-            onClick={handleDelete}
-            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
-            title="Delete component"
-          >
+          <button onClick={handleDelete} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-colors z-10" title="Delete component">
             <X className="w-4 h-4 text-white" />
           </button>
         )}
 
-        <div className={`px-3 py-2.5 rounded-xl min-w-[220px]`}>
+        <div className={`px-3 py-2.5 rounded-xl min-w-55`}>
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               {registryItem && (
-                <ComponentIconRenderer
-                  type={registryItem.type}
-                  vendor={registryItem.vendor}
-                  size={24}
-                />
+                <ComponentIconRenderer type={registryItem.type} vendor={registryItem.vendor} size={24}/>
               )}
             </div>
             <div className="flex-1 min-w-0 pr-2">
@@ -319,14 +312,10 @@ export function ComponentNode({
                 </button>
               )}
               <div className={`w-1.5 h-1.5 rounded-full ${status.indicator} shadow-[0_0_5px_currentColor]`} />
-              <button
-                onClick={(e) => {
+              <button onClick={(e) => {
                   e.stopPropagation();
                   setContextMenu({ x: e.clientX, y: e.clientY });
-                }}
-                className="rounded-md p-1 text-slate-500 transition-colors hover:bg-white/5 hover:text-slate-300"
-                title="Actions"
-              >
+                }} className="rounded-md p-1 text-slate-500 transition-colors hover:bg-white/5 hover:text-slate-300" title="Actions" >
                 <MoreVertical className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -351,19 +340,15 @@ export function ComponentNode({
           </div>
         )}
 
-        {/* Left port - input (target for connections) */}
         <div
           className={`connection-port absolute -left-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border border-white/10 transition-all cursor-pointer z-10 flex items-center justify-center
             ${canBeTarget
               ? 'bg-green-500/20 border-green-400/50 scale-125 shadow-[0_0_10px_rgba(74,222,128,0.3)]'
               : 'bg-slate-900 hover:bg-slate-800 hover:border-slate-500'}`}
-          onClick={(e) => handlePortClick(e, 'left')}
-          title={canBeTarget ? 'Click to connect here' : 'Input port'}
-        >
+          onClick={(e) => handlePortClick(e, 'left')} title={canBeTarget ? 'Click to connect here' : 'Input port'} >
           <div className={`w-1.5 h-1.5 rounded-full ${canBeTarget ? 'bg-green-400' : 'bg-slate-600'}`} />
         </div>
 
-        {/* Right port - output (source for connections) */}
         <div
           className={`connection-port absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border border-white/10 transition-all cursor-pointer z-10 flex items-center justify-center
             ${isConnecting && connectionSource === node.id

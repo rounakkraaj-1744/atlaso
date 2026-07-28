@@ -1,11 +1,6 @@
 import type { ComponentRegistry } from '../../../types/registry';
 
-/**
- * Enterprise Component Registry
- * Cloud-Agnostic Engineering Primitives
- */
 export const componentRegistry: ComponentRegistry = {
-  // ========== COMPUTE ==========
   'vm': {
     type: 'vm',
     name: 'Virtual Machine',
@@ -118,8 +113,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['compute', 'gpu', 'ml', 'hardware'],
   },
-
-  // ========== NETWORKING ==========
   'dns': {
     type: 'dns',
     name: 'DNS',
@@ -260,8 +253,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['networking', 'firewall', 'security', 'waf'],
   },
-
-  // ========== STORAGE ==========
   'object-storage': {
     type: 'object-storage',
     name: 'Object Storage',
@@ -312,14 +303,13 @@ export const componentRegistry: ComponentRegistry = {
     dataPatterns: ['batch'],
     description: 'Low-cost, long-term storage for rarely accessed data',
     defaultThroughput: 1000,
-    defaultLatency: 60000, // Very high latency for retrieval
+    defaultLatency: 60000,
     isManaged: true,
     isControlPlane: false,
     pack: 'core',
     tags: ['storage', 'archive', 'cold', 'backup'],
   },
 
-  // ========== DATABASES ==========
   'relational-db': {
     type: 'relational-db',
     name: 'Relational Database',
@@ -446,8 +436,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['database', 'warehouse', 'analytics', 'olap'],
   },
-
-  // ========== CACHE ==========
   'distributed-cache': {
     type: 'distributed-cache',
     name: 'Distributed Cache',
@@ -490,8 +478,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['cache', 'session', 'state'],
   },
-
-  // ========== MESSAGING ==========
   'message-queue': {
     type: 'message-queue',
     name: 'Message Queue',
@@ -562,8 +548,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['messaging', 'dlq', 'error', 'retry'],
   },
-
-  // ========== IDENTITY & SECURITY ==========
   'authentication': {
     type: 'authentication',
     name: 'Authentication',
@@ -648,8 +632,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['security', 'kms', 'crypto', 'encryption'],
   },
-
-  // ========== OBSERVABILITY ==========
   'logging': {
     type: 'logging',
     name: 'Logging',
@@ -734,8 +716,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['observability', 'audit', 'compliance', 'security'],
   },
-
-  // ========== AI ==========
   'llm': {
     type: 'llm',
     name: 'LLM',
@@ -820,8 +800,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['ai', 'ml', 'inference', 'prediction'],
   },
-
-  // ========== EXTERNAL SERVICES ==========
   'payment-provider': {
     type: 'payment-provider',
     name: 'Payment Provider',
@@ -920,8 +898,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['external', 'api', 'dependency', 'saas'],
   },
-
-  // ========== DATA & ANALYTICS ==========
   'etl-pipeline': {
     type: 'etl-pipeline',
     name: 'ETL Pipeline',
@@ -978,8 +954,6 @@ export const componentRegistry: ComponentRegistry = {
     pack: 'core',
     tags: ['analytics', 'lake', 'big-data', 'storage'],
   },
-
-  // ========== DEVOPS ==========
   'cicd-pipeline': {
     type: 'cicd-pipeline',
     name: 'CI/CD Pipeline',

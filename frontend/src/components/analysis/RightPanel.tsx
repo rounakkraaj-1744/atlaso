@@ -69,7 +69,6 @@ export function RightPanel({
     }
   };
 
-  // Render Top Tabs globally
   const renderTabs = () => (
     <div className="flex border-b border-white/5 overflow-x-auto no-scrollbar shrink-0 px-2 mt-2">
       {tabs.map((tab) => (
@@ -84,14 +83,13 @@ export function RightPanel({
         >
           {tab.label}
           {activeTab === tab.id && (
-            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-500 rounded-t-full" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-t-full" />
           )}
         </button>
       ))}
     </div>
   );
 
-  // 1. Render Node Configuration
   if (selectedNode) {
     const registryItem = componentRegistry[selectedNode.type];
 
@@ -256,11 +254,11 @@ export function RightPanel({
               <div className="flex items-center gap-2 pt-1">
                 <button
                   onClick={() => onOpenReplaceTechnology?.(selectedNode)}
-                  className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/5"
+                  className="flex-1 rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/5"
                 >
                   Replace Technology
                 </button>
-                <button className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/5">
+                <button className="flex-1 rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/5">
                   Reset to Profile Mapping
                 </button>
               </div>
@@ -271,7 +269,6 @@ export function RightPanel({
     );
   }
 
-  // 2. Render Connection Configuration
   if (selectedConnection) {
     const source = nodes.find(n => n.id === selectedConnection.sourceId);
     const target = nodes.find(n => n.id === selectedConnection.targetId);
@@ -304,26 +301,14 @@ export function RightPanel({
           </div>
 
           <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="hasRetry"
-              checked={selectedConnection.hasRetry}
-              onChange={(e) => handleUpdateConnectionToggle('hasRetry', e.target.checked)}
-              className="w-4 h-4 rounded border-white/10 bg-black/20 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900"
-            />
+            <input type="checkbox" id="hasRetry" checked={selectedConnection.hasRetry} onChange={(e) => handleUpdateConnectionToggle('hasRetry', e.target.checked)} className="w-4 h-4 rounded border-white/10 bg-black/20 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900"/>
             <label htmlFor="hasRetry" className="text-sm text-slate-300 select-none cursor-pointer">
               Enable retry mechanism
             </label>
           </div>
 
           <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="hasBuffer"
-              checked={selectedConnection.hasBuffer}
-              onChange={(e) => handleUpdateConnectionToggle('hasBuffer', e.target.checked)}
-              className="w-4 h-4 rounded border-white/10 bg-black/20 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900"
-            />
+            <input type="checkbox" id="hasBuffer" checked={selectedConnection.hasBuffer} onChange={(e) => handleUpdateConnectionToggle('hasBuffer', e.target.checked)} className="w-4 h-4 rounded border-white/10 bg-black/20 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900"/>
             <label htmlFor="hasBuffer" className="text-sm text-slate-300 select-none cursor-pointer">
               Use buffering/queue
             </label>
@@ -331,13 +316,12 @@ export function RightPanel({
         </div>
 
         <div className="p-5 border-t border-white/5">
-          <button
-            onClick={() => {
-              if (onDeleteConnection) onDeleteConnection(selectedConnection.id);
-              if (setSelectedConnection) setSelectedConnection(null);
-            }}
-            className="w-full px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-md text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
-          >
+          <button onClick={() => {
+              if (onDeleteConnection) 
+                onDeleteConnection(selectedConnection.id);
+              if (setSelectedConnection) 
+                setSelectedConnection(null);
+            }} className="w-full px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-md text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors" >
             Delete Connection
           </button>
         </div>
@@ -345,12 +329,10 @@ export function RightPanel({
     );
   }
 
-  // 3. Default: Project Overview / Analysis (Nothing selected)
   return (
     <div className="h-full bg-[#09090b]/95 border-l border-white/5 flex flex-col">
       {renderTabs()}
 
-      {/* Tab Content */}
       <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
         {activeTab === 'overview' && (
           <ConstraintsTab constraints={constraints} onConstraintsChange={onConstraintsChange} />

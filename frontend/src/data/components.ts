@@ -1,7 +1,6 @@
 import type { ComponentDefinition } from '../types';
 
 export const componentDefinitions: ComponentDefinition[] = [
-  // Traffic & Networking
   {
     type: 'load-balancer',
     category: 'traffic',
@@ -26,7 +25,6 @@ export const componentDefinitions: ComponentDefinition[] = [
     defaultThroughput: 100000,
     defaultLatency: 10,
   },
-  // Compute
   {
     type: 'api-server',
     category: 'compute',
@@ -51,7 +49,6 @@ export const componentDefinitions: ComponentDefinition[] = [
     defaultThroughput: 100,
     defaultLatency: 1000,
   },
-  // Messaging & Streaming
   {
     type: 'kafka',
     category: 'messaging',
@@ -76,7 +73,6 @@ export const componentDefinitions: ComponentDefinition[] = [
     defaultThroughput: 5000,
     defaultLatency: 2,
   },
-  // Caching & Storage
   {
     type: 'redis',
     category: 'caching',
@@ -101,7 +97,6 @@ export const componentDefinitions: ComponentDefinition[] = [
     defaultThroughput: 10000,
     defaultLatency: 5,
   },
-  // Observability
   {
     type: 'metrics',
     category: 'observability',

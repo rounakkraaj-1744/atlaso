@@ -36,7 +36,6 @@ export function BottomPanel({
 
   return (
     <div className="h-64 bg-[#09090b]/95 border-t border-white/5 flex flex-col shrink-0">
-      {/* Header Tabs */}
       <div className="h-10 border-b border-white/5 flex items-center px-4 shrink-0 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => (
           <button
@@ -57,15 +56,13 @@ export function BottomPanel({
               </span>
             )}
             {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-500 rounded-t-full" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-t-full" />
             )}
           </button>
         ))}
       </div>
 
-      {/* Content Area */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Left: Alerts */}
         <div className="flex-[1.2] p-4 overflow-y-auto custom-scrollbar border-r border-white/5 space-y-3">
           <div className="flex items-start gap-3 p-3 bg-red-500/5 rounded-lg border border-red-500/10">
             <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -93,8 +90,7 @@ export function BottomPanel({
           </div>
         </div>
 
-        {/* Center: Chart Mockup */}
-        <div className="flex-[2] p-4 border-r border-white/5 flex flex-col min-h-0">
+        <div className="flex-2 p-4 border-r border-white/5 flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-4 shrink-0">
             <h3 className="text-xs font-semibold text-slate-200">Load Simulation Results</h3>
             <div className="flex items-center gap-4 text-[10px] text-slate-400">
@@ -105,7 +101,6 @@ export function BottomPanel({
           </div>
           
           <div className="flex-1 relative mt-2 w-full h-full">
-             {/* Chart Y Axis Left */}
              <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[9px] text-slate-500 z-10 font-mono">
                <span>150ms</span>
                <span>100ms</span>
@@ -113,7 +108,6 @@ export function BottomPanel({
                <span>0ms</span>
              </div>
              
-             {/* Chart Y Axis Right */}
              <div className="absolute right-0 top-0 bottom-6 flex flex-col justify-between text-[9px] text-slate-500 z-10 font-mono text-right">
                <span>600k</span>
                <span>400k</span>
@@ -121,24 +115,18 @@ export function BottomPanel({
                <span>0</span>
              </div>
 
-             {/* Chart Grid */}
              <div className="absolute left-8 right-8 top-1 bottom-6 flex flex-col justify-between">
                {[...Array(4)].map((_, i) => (
                  <div key={i} className="w-full h-px bg-white/5" />
                ))}
              </div>
 
-             {/* SVG Lines */}
              <svg className="absolute left-8 right-8 top-1 bottom-6 w-[calc(100%-4rem)] h-[calc(100%-1.5rem)] overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-               {/* Throughput (Green) */}
                <path d="M 0 90 L 25 70 L 50 60 L 75 45 L 100 20" fill="none" stroke="#10b981" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-               {/* Latency (Blue) */}
                <path d="M 0 95 L 25 85 L 50 80 L 75 60 L 100 40" fill="none" stroke="#3b82f6" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-               {/* Error Rate (Red) */}
                <path d="M 0 98 L 25 98 L 50 95 L 75 90 L 100 70" fill="none" stroke="#ef4444" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
              </svg>
 
-             {/* Chart X Axis */}
              <div className="absolute left-8 right-8 bottom-0 flex justify-between text-[9px] text-slate-500 font-mono">
                <span>1k</span>
                <span>10k</span>
@@ -149,7 +137,6 @@ export function BottomPanel({
           </div>
         </div>
 
-        {/* Right: Metrics */}
         <div className="flex-1 p-5 space-y-5 overflow-y-auto custom-scrollbar">
           <div className="flex items-center gap-2 text-emerald-400">
             <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
