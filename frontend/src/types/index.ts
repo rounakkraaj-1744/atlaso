@@ -6,6 +6,9 @@ export type ComponentCategory =
     | 'observability';
 
 export type ComponentType =
+    | 'web-client'
+    | 'mobile-client'
+    | 'tablet-client'
     | 'load-balancer'
     | 'api-gateway'
     | 'cdn'

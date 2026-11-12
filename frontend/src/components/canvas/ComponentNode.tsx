@@ -66,6 +66,7 @@ interface ComponentNodeProps {
   isConnecting?: boolean;
   connectionSource?: string | null;
   onOpenReplaceTechnology?: (node: CanvasNode) => void;
+  interactionMode?: 'select' | 'hand' | 'comment' | 'rectangle' | 'line';
 }
 
 export function ComponentNode({
@@ -83,6 +84,7 @@ export function ComponentNode({
   isConnecting = false,
   connectionSource,
   onOpenReplaceTechnology,
+  interactionMode = 'select',
 }: ComponentNodeProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showDetailPopover, setShowDetailPopover] = useState(false);
@@ -100,6 +102,9 @@ export function ComponentNode({
   }, [node.position, isDragging]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (interactionMode !== 'select')
+      return;
+
     if (e.button !== 0 || (e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('.connection-port'))
       return;
 
@@ -151,6 +156,9 @@ export function ComponentNode({
   };
 
   const handleClick = (e: React.MouseEvent) => {
+    if (interactionMode !== 'select')
+      return;
+
     if (hasDragged)
       return;
 
@@ -165,6 +173,9 @@ export function ComponentNode({
   };
 
   const handlePortClick = (e: React.MouseEvent, side: 'left' | 'right') => {
+    if (interactionMode !== 'select')
+      return;
+
     e.stopPropagation();
     e.preventDefault();
 

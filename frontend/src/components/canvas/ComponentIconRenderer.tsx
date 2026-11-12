@@ -1,5 +1,6 @@
 import {
   Server, Database, Cloud, Network, Cpu, HardDrive, Workflow, Activity, BarChart3, Box,
+  Monitor, Smartphone, Tablet,
   Shield, Key, BrainCircuit, Bot, Globe, Mail, MessageSquare, CreditCard,
   TerminalSquare, Layers, Lock, Clock, Zap, Search, Fingerprint, LineChart, FileText
 } from 'lucide-react';
@@ -29,6 +30,10 @@ export function ComponentIconRenderer({ type, size = 20, className = '' }: Compo
 }
 
 function getIconComponent(type: string) {
+  if (type.includes('web-client')) return Monitor;
+  if (type.includes('mobile-client')) return Smartphone;
+  if (type.includes('tablet-client')) return Tablet;
+
   if (type.includes('gpu')) return Zap;
   if (type.includes('function') || type.includes('lambda')) return Cpu;
   if (type.includes('container') || type.includes('worker') || type.includes('job')) return Box;

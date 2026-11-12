@@ -11,14 +11,7 @@ interface BottomPanelProps {
   setIsExpanded: (isExpanded: boolean) => void;
 }
 
-export function BottomPanel({
-  analysis,
-  suggestions,
-  isOpen,
-  setIsOpen,
-  isExpanded,
-  setIsExpanded,
-}: BottomPanelProps) {
+export function BottomPanel({ analysis, suggestions, isOpen, setIsOpen, isExpanded, setIsExpanded,}: BottomPanelProps) {
   void analysis;
   void suggestions;
   void isOpen;
@@ -38,15 +31,11 @@ export function BottomPanel({
     <div className="h-64 bg-[#09090b]/95 border-t border-white/5 flex flex-col shrink-0">
       <div className="h-10 border-b border-white/5 flex items-center px-4 shrink-0 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex items-center gap-2 h-full px-4 text-xs font-medium transition-colors relative whitespace-nowrap ${
+          <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`flex items-center gap-2 h-full px-4 text-xs font-medium transition-colors relative whitespace-nowrap ${
               activeTab === tab.id
                 ? 'text-white'
                 : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-            }`}
-          >
+            }`} >
             {tab.label}
             {tab.badge !== undefined && tab.badge > 0 && (
               <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${

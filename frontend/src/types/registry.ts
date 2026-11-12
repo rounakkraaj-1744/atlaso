@@ -1,5 +1,5 @@
 export type Vendor = 'generic';
-export type Domain = 'compute' | 'networking' | 'storage' | 'databases' | 'cache' | 'messaging' | 'security' | 'observability' | 'ai' | 'external' | 'analytics' | 'devops';
+export type Domain = 'client' | 'compute' | 'networking' | 'storage' | 'databases' | 'cache' | 'messaging' | 'security' | 'observability' | 'ai' | 'external' | 'analytics' | 'devops';
 export type DataPattern = 'sync' | 'async' | 'batch' | 'stream' | 'realtime';
 export type ComponentPack = 'core';
 

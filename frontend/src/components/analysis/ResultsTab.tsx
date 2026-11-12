@@ -104,19 +104,14 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
                     </h3>
                     <div className="space-y-2">
                         {sortedBottlenecks.map((bottleneck, idx) => (
-                            <div
-                                key={idx}
-                                className="p-3 rounded-lg bg-bg-tertiary border border-border hover:border-accent-blue/30 transition-colors"
-                            >
+                            <div key={idx} className="p-3 rounded-lg bg-bg-tertiary border border-border hover:border-accent-blue/30 transition-colors" >
                                 <div className="flex items-start gap-3">
-                                    <div
-                                        className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${bottleneck.severity === 'high'
+                                    <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${bottleneck.severity === 'high'
                                             ? 'bg-accent-red'
                                             : bottleneck.severity === 'medium'
                                                 ? 'bg-accent-yellow'
                                                 : 'bg-accent-blue'
-                                            }`}
-                                    />
+                                            }`} />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className="text-sm font-semibold text-text-primary">

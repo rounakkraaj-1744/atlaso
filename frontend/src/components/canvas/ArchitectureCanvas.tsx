@@ -5,6 +5,30 @@ import type { CanvasNode, ComponentType, Connection } from '../../types';
 import { componentRegistry } from '../../features/registry/data/components';
 import { ZoomIn, ZoomOut, Maximize2, MousePointer2, Hand, MessageSquare, Square, Minus } from 'lucide-react';
 
+type CanvasTool = 'select' | 'hand' | 'comment' | 'rectangle' | 'line';
+
+interface CanvasAnnotation {
+    id: string;
+    type: 'comment' | 'rectangle' | 'line';
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    text?: string;
+}
+
+interface DrawingState {
+    tool: 'rectangle' | 'line';
+    start: { x: number; y: number };
+    current: { x: number; y: number };
+}
+
+interface AnnotationDragState {
+    id: string;
+    offsetX: number;
+    offsetY: number;
+}
+
 interface CanvasProps {
     nodes: CanvasNode[];
     connections: Connection[];
@@ -21,6 +45,8 @@ interface CanvasProps {
     selectedConnection: Connection | null;
     setSelectedConnection: (conn: Connection | null) => void;
     onOpenReplaceTechnology?: (node: CanvasNode) => void;
+    initialViewport?: { x: number; y: number; zoom: number };
+    onViewportChange?: (viewport: { x: number; y: number; zoom: number }) => void;
 }
 
 export function Canvas({
@@ -39,17 +65,33 @@ export function Canvas({
     selectedConnection,
     setSelectedConnection,
     onOpenReplaceTechnology,
+    initialViewport,
+    onViewportChange,
 }: CanvasProps) {
     void onUpdateNode;
     void onUpdateConnection;
     const canvasRef = useRef<HTMLDivElement>(null);
-    const [pan, setPan] = useState({ x: 0, y: 0 });
-    const [scale, setScale] = useState(1);
+    const [pan, setPan] = useState({ x: initialViewport?.x ?? 0, y: initialViewport?.y ?? 0 });
+    const [scale, setScale] = useState(initialViewport?.zoom ?? 1);
     const [isPanning, setIsPanning] = useState(false);
     const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+    const [activeTool, setActiveTool] = useState<CanvasTool>('select');
+    const [annotations, setAnnotations] = useState<CanvasAnnotation[]>([]);
+    const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null);
+    const [drawing, setDrawing] = useState<DrawingState | null>(null);
+    const [annotationDrag, setAnnotationDrag] = useState<AnnotationDragState | null>(null);
     const [connectionSource, setConnectionSource] = useState<string | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        setPan({ x: initialViewport?.x ?? 0, y: initialViewport?.y ?? 0 });
+        setScale(initialViewport?.zoom ?? 1);
+    }, [initialViewport?.x, initialViewport?.y, initialViewport?.zoom]);
+
+    useEffect(() => {
+        onViewportChange?.({ x: pan.x, y: pan.y, zoom: scale });
+    }, [pan, scale, onViewportChange]);
 
     useEffect(() => {
         if (!isConnecting) 
@@ -70,6 +112,30 @@ export function Canvas({
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            const shortcutTools: Record<string, CanvasTool> = {
+                v: 'select',
+                h: 'hand',
+                c: 'comment',
+                r: 'rectangle',
+                l: 'line',
+            };
+            const shortcutTool = shortcutTools[e.key.toLowerCase()];
+            if (shortcutTool && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                setActiveTool(shortcutTool);
+                return;
+            }
+
+            if (e.key === 'Escape' && drawing) {
+                setDrawing(null);
+                return;
+            }
+
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedAnnotationId) {
+                setAnnotations((current) => current.filter((annotation) => annotation.id !== selectedAnnotationId));
+                setSelectedAnnotationId(null);
+                return;
+            }
+
             if (e.key === 'Delete' || e.key === 'Backspace') {
                 if (selectedNode && onDeleteNode) {
                     onDeleteNode(selectedNode.id);
@@ -98,7 +164,7 @@ export function Canvas({
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedNode, selectedConnection, onDeleteNode, onDeleteConnection, onDuplicateNode]);
+    }, [drawing, selectedAnnotationId, selectedNode, selectedConnection, onDeleteNode, onDeleteConnection, onDuplicateNode]);
 
     const handleStartConnection = useCallback((nodeId: string) => {
         setConnectionSource(nodeId);
@@ -187,28 +253,130 @@ export function Canvas({
     const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
     const lastDistRef = useRef<number | null>(null);
 
+    const getCanvasPoint = useCallback((clientX: number, clientY: number) => {
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (!rect)
+            return null;
+
+        return {
+            x: (clientX - rect.left - pan.x) / scale,
+            y: (clientY - rect.top - pan.y) / scale,
+        };
+    }, [pan, scale]);
+
+    const addComment = useCallback((point: { x: number; y: number }) => {
+        const text = window.prompt('Add comment');
+        if (!text?.trim())
+            return;
+
+        const annotation: CanvasAnnotation = {
+            id: `annotation-${Date.now()}`,
+            type: 'comment',
+            x: point.x,
+            y: point.y,
+            width: 150,
+            height: 48,
+            text: text.trim(),
+        };
+        setAnnotations((current) => [...current, annotation]);
+        setSelectedAnnotationId(annotation.id);
+        setActiveTool('select');
+    }, []);
+
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        if (e.button === 0 || e.button === 1) {
+        if ((e.target as HTMLElement).closest('button'))
+            return;
+
+        const point = getCanvasPoint(e.clientX, e.clientY);
+        if (!point)
+            return;
+
+        if (activeTool === 'comment') {
+            e.preventDefault();
+            addComment(point);
+            return;
+        }
+
+        if (activeTool === 'rectangle' || activeTool === 'line') {
+            e.preventDefault();
+            setSelectedAnnotationId(null);
+            setDrawing({ tool: activeTool, start: point, current: point });
+            return;
+        }
+
+        const shouldPan = activeTool === 'hand' || e.button === 1 || (e.button === 0 && e.shiftKey);
+        if (shouldPan) {
+            e.preventDefault();
             setIsPanning(true);
             setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
         }
-    }, [pan]);
+    }, [activeTool, addComment, getCanvasPoint, pan]);
 
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
+        if (annotationDrag) {
+            const point = getCanvasPoint(e.clientX, e.clientY);
+            if (point) {
+                setAnnotations((current) => current.map((annotation) => annotation.id === annotationDrag.id
+                    ? { ...annotation, x: point.x - annotationDrag.offsetX, y: point.y - annotationDrag.offsetY }
+                    : annotation));
+            }
+            return;
+        }
+
+        if (drawing) {
+            const point = getCanvasPoint(e.clientX, e.clientY);
+            if (point)
+                setDrawing((current) => current ? { ...current, current: point } : null);
+            return;
+        }
+
         if (isPanning) {
             setPan({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
         }
-    }, [isPanning, panStart]);
+    }, [annotationDrag, drawing, getCanvasPoint, isPanning, panStart]);
 
     const handleMouseUp = useCallback(() => {
+        if (annotationDrag) {
+            setAnnotationDrag(null);
+            return;
+        }
+
+        if (drawing) {
+            const { start, current, tool } = drawing;
+            const width = current.x - start.x;
+            const height = current.y - start.y;
+            if (tool === 'line' || Math.abs(width) > 4 || Math.abs(height) > 4) {
+                const annotation: CanvasAnnotation = {
+                    id: `annotation-${Date.now()}`,
+                    type: tool,
+                    x: tool === 'line' ? start.x : Math.min(start.x, current.x),
+                    y: tool === 'line' ? start.y : Math.min(start.y, current.y),
+                    width,
+                    height,
+                };
+                setAnnotations((currentAnnotations) => [...currentAnnotations, annotation]);
+                setSelectedAnnotationId(annotation.id);
+            }
+            setDrawing(null);
+            setActiveTool('select');
+            return;
+        }
+
         setIsPanning(false);
-    }, []);
+    }, [annotationDrag, drawing]);
 
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         if (e.touches.length === 1) {
             const touch = e.touches[0];
             lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
-            setIsPanning(true);
+            const point = getCanvasPoint(touch.clientX, touch.clientY);
+            if (point && activeTool === 'comment') {
+                addComment(point);
+            } else if (point && (activeTool === 'rectangle' || activeTool === 'line')) {
+                setDrawing({ tool: activeTool, start: point, current: point });
+            } else if (activeTool === 'hand') {
+                setIsPanning(true);
+            }
         } else if (e.touches.length === 2) {
             const dist = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
@@ -216,10 +384,15 @@ export function Canvas({
             );
             lastDistRef.current = dist;
         }
-    }, []);
+    }, [activeTool, addComment, getCanvasPoint]);
 
     const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        if (e.touches.length === 1 && isPanning && lastTouchRef.current) {
+        if (e.touches.length === 1 && drawing) {
+            const touch = e.touches[0];
+            const point = getCanvasPoint(touch.clientX, touch.clientY);
+            if (point)
+                setDrawing((current) => current ? { ...current, current: point } : null);
+        } else if (e.touches.length === 1 && isPanning && lastTouchRef.current) {
             const touch = e.touches[0];
             const dx = touch.clientX - lastTouchRef.current.x;
             const dy = touch.clientY - lastTouchRef.current.y;
@@ -234,13 +407,15 @@ export function Canvas({
             setScale(s => Math.min(Math.max(s * delta, 0.25), 2));
             lastDistRef.current = dist;
         }
-    }, [isPanning]);
+    }, [drawing, getCanvasPoint, isPanning]);
 
     const handleTouchEnd = useCallback(() => {
+        if (drawing)
+            handleMouseUp();
         setIsPanning(false);
         lastTouchRef.current = null;
         lastDistRef.current = null;
-    }, []);
+    }, [drawing, handleMouseUp]);
 
     const handleZoomIn = () => setScale((prev) => Math.min(prev * 1.2, 2));
     const handleZoomOut = () => setScale((prev) => Math.max(prev / 1.2, 0.25));
@@ -332,6 +507,82 @@ export function Canvas({
         );
     };
 
+    const renderAnnotations = () => {
+        const items = annotations.map((annotation) => {
+            const isSelected = selectedAnnotationId === annotation.id;
+            const commonProps = {
+                onMouseDown: (event: React.MouseEvent) => {
+                    if (activeTool !== 'select')
+                        return;
+
+                    const point = getCanvasPoint(event.clientX, event.clientY);
+                    if (!point)
+                        return;
+
+                    event.stopPropagation();
+                    setSelectedAnnotationId(annotation.id);
+                    setAnnotationDrag({
+                        id: annotation.id,
+                        offsetX: point.x - annotation.x,
+                        offsetY: point.y - annotation.y,
+                    });
+                },
+                onClick: (event: React.MouseEvent) => {
+                    event.stopPropagation();
+                    if (activeTool === 'select')
+                        setSelectedAnnotationId(annotation.id);
+                },
+                style: { cursor: activeTool === 'select' ? 'pointer' : 'crosshair' },
+            };
+
+            if (annotation.type === 'line') {
+                return (
+                    <g key={annotation.id} {...commonProps}>
+                        <line x1={annotation.x} y1={annotation.y} x2={annotation.x + annotation.width} y2={annotation.y + annotation.height} stroke="transparent" strokeWidth="12" />
+                        <line x1={annotation.x} y1={annotation.y} x2={annotation.x + annotation.width} y2={annotation.y + annotation.height} stroke={isSelected ? '#60a5fa' : '#cbd5e1'} strokeWidth={isSelected ? 3 : 2} />
+                    </g>
+                );
+            }
+
+            if (annotation.type === 'comment') {
+                return (
+                    <g key={annotation.id} {...commonProps}>
+                        <rect x={annotation.x} y={annotation.y} width={annotation.width} height={annotation.height} rx="6" fill="#172033" stroke={isSelected ? '#60a5fa' : '#64748b'} strokeWidth={isSelected ? 2 : 1} />
+                        <text x={annotation.x + 8} y={annotation.y + 20} fill="#e2e8f0" fontSize="12">{annotation.text}</text>
+                    </g>
+                );
+            }
+
+            return (
+                <rect
+                    key={annotation.id}
+                    {...commonProps}
+                    x={annotation.x}
+                    y={annotation.y}
+                    width={annotation.width}
+                    height={annotation.height}
+                    fill={isSelected ? 'rgba(96,165,250,0.12)' : 'rgba(148,163,184,0.08)'}
+                    stroke={isSelected ? '#60a5fa' : '#94a3b8'}
+                    strokeWidth={isSelected ? 3 : 2}
+                />
+            );
+        });
+
+        if (!drawing)
+            return items;
+
+        const width = drawing.current.x - drawing.start.x;
+        const height = drawing.current.y - drawing.start.y;
+        if (drawing.tool === 'line') {
+            return [...items, <line key="drawing-preview" x1={drawing.start.x} y1={drawing.start.y} x2={drawing.current.x} y2={drawing.current.y} stroke="#60a5fa" strokeWidth="2" strokeDasharray="6 4" />];
+        }
+
+        return [
+            ...items,
+            <rect key="drawing-preview" x={Math.min(drawing.start.x, drawing.current.x)} y={Math.min(drawing.start.y, drawing.current.y)} width={Math.abs(width)} height={Math.abs(height)} fill="rgba(96,165,250,0.12)" stroke="#60a5fa" strokeWidth="2" strokeDasharray="6 4" />,
+        ];
+    };
+
     return (
         <>
             <div ref={(node) => {
@@ -339,7 +590,7 @@ export function Canvas({
                 if (node) 
                     canvasRef.current = node;
             }}
-                className={`relative flex-1 h-full bg-slate-950 overflow-hidden select-none ${isPanning ? 'cursor-grabbing' : 'cursor-default'
+                className={`relative flex-1 h-full bg-slate-950 overflow-hidden select-none ${isPanning ? 'cursor-grabbing' : activeTool === 'hand' ? 'cursor-grab' : 'cursor-default'
                     } ${isOver ? 'bg-slate-900/50' : ''} ${isConnecting ? 'cursor-crosshair' : ''}`}
                 onWheel={handleWheel}
                 onMouseDown={handleMouseDown}
@@ -366,12 +617,13 @@ export function Canvas({
                     className="relative w-full h-full"
                 >
                     <svg className="absolute inset-0 w-1250 h-1250" style={{ pointerEvents: 'all' }}>
+                        {renderAnnotations()}
                         {renderConnections()}
                         {renderConnectionPreview()}
                     </svg>
 
                     {nodes.map((node) => (
-                        <ComponentNode key={node.id} node={node} onClick={() => setSelectedNode(node)} onPositionChange={onNodePositionChange} onDelete={onDeleteNode} scale={scale} onStartConnection={handleStartConnection} onEndConnection={handleEndConnection} isConnecting={isConnecting} connectionSource={connectionSource} onOpenReplaceTechnology={onOpenReplaceTechnology}/>
+                        <ComponentNode key={node.id} node={node} onClick={() => setSelectedNode(node)} onPositionChange={onNodePositionChange} onDelete={onDeleteNode} scale={scale} interactionMode={activeTool} onStartConnection={handleStartConnection} onEndConnection={handleEndConnection} isConnecting={isConnecting} connectionSource={connectionSource} onOpenReplaceTechnology={onOpenReplaceTechnology}/>
                     ))}
                 </div>
 
@@ -394,19 +646,19 @@ export function Canvas({
                 </div>
 
                 <div className="absolute top-1/2 left-6 -translate-y-1/2 flex flex-col gap-2 p-1.5 bg-[#09090b]/80 backdrop-blur-md border border-white/10 rounded-xl shadow-lg z-40">
-                    <button className="p-2 bg-blue-600 rounded-lg text-white shadow-sm" title="Select (V)">
+                    <button onClick={() => setActiveTool('select')} className={`p-2 rounded-lg transition-colors ${activeTool === 'select' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} title="Select (V)">
                         <MousePointer2 className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Hand Tool (H)">
+                    <button onClick={() => setActiveTool('hand')} className={`p-2 rounded-lg transition-colors ${activeTool === 'hand' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} title="Hand Tool (H)">
                         <Hand className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Comment (C)">
+                    <button onClick={() => setActiveTool('comment')} className={`p-2 rounded-lg transition-colors ${activeTool === 'comment' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} title="Comment (C)">
                         <MessageSquare className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Rectangle (R)">
+                    <button onClick={() => setActiveTool('rectangle')} className={`p-2 rounded-lg transition-colors ${activeTool === 'rectangle' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} title="Rectangle (R)">
                         <Square className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Line (L)">
+                    <button onClick={() => setActiveTool('line')} className={`p-2 rounded-lg transition-colors ${activeTool === 'line' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/10'}`} title="Line (L)">
                         <Minus className="w-4 h-4" />
                     </button>
                 </div>

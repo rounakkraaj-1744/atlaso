@@ -10,6 +10,7 @@ interface Viewport {
 interface ArchitectureState {
     nodes: CanvasNode[];
     connections: Connection[];
+    activeArchitectureId: string | null;
 
     viewport: Viewport;
     selectedNodeId: string | null;
@@ -27,11 +28,14 @@ interface ArchitectureState {
     setSelectedNode: (id: string | null) => void;
     setSelectedConnection: (id: string | null) => void;
     resetCanvas: () => void;
+    loadCanvas: (nodes: CanvasNode[], connections: Connection[], viewport?: Partial<Viewport>) => void;
+    setActiveArchitectureId: (id: string | null) => void;
 }
 
 const initialState = {
     nodes: [],
     connections: [],
+    activeArchitectureId: null,
     viewport: { x: 0, y: 0, zoom: 1 },
     selectedNodeId: null,
     selectedConnectionId: null,
@@ -117,4 +121,6 @@ export const useArchitectureStore = create<ArchitectureState>((set) => ({
         set({ selectedConnectionId: id, selectedNodeId: null }),
 
     resetCanvas: () => set(initialState),
+    loadCanvas: (nodes, connections, viewport) => set({ ...initialState, nodes, connections, viewport: { ...initialState.viewport, ...viewport } }),
+    setActiveArchitectureId: (activeArchitectureId) => set({ activeArchitectureId }),
 }));

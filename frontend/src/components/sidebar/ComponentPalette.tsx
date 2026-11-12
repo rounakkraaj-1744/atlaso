@@ -9,7 +9,7 @@ import { ComponentIconRenderer } from '../canvas/ComponentIconRenderer';
 export function ComponentRegistryPanel() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedDomains, setExpandedDomains] = useState<Set<Domain>>(
-    new Set(['compute', 'networking'])
+    new Set(['client', 'compute', 'networking'])
   );
 
   const allComponents = useMemo(() => Object.values(componentRegistry) as ComponentRegistryItem[], []);
@@ -82,14 +82,14 @@ export function ComponentRegistryPanel() {
   };
 
   const domainOrder: Domain[] = [
-    'compute', 'networking', 'storage', 'databases', 'cache',
+    'client', 'compute', 'networking', 'storage', 'databases', 'cache',
     'messaging', 'security', 'observability', 'ai',
     'external', 'analytics', 'devops'
   ];
 
   return (
     <div className="h-full bg-[#09090b]/95 border-r border-white/5 flex flex-col font-sans">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 shrink-0 bg-white/[0.01]">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 shrink-0 bg-white/1">
         <LayoutGrid className="w-4 h-4 text-slate-400" />
         <span className="text-xs font-semibold text-slate-200">Primitives</span>
       </div>

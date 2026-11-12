@@ -23,6 +23,8 @@ export interface Architecture {
     description: string;
     nodes: CanvasNode[];
     edges: Connection[];
+    canvasMetadata?: Record<string, unknown>;
+    providerProfile?: string;
     version: number;
     parentId: string | null;
     createdAt: string;
@@ -60,6 +62,7 @@ class ApiClient {
                     'Content-Type': 'application/json',
                     ...options.headers,
                 },
+                credentials: 'include',
             });
 
             if (!response.ok) {
@@ -94,6 +97,9 @@ class ApiClient {
         description: string;
         nodes: CanvasNode[];
         edges: Connection[];
+        canvasMetadata?: Record<string, unknown>;
+        providerProfile?: string;
+        projectId?: string;
     }): Promise<ApiResponse<Architecture>> {
         return this.request('/architecture', {
             method: 'POST',
@@ -106,6 +112,8 @@ class ApiClient {
         description: string;
         nodes: CanvasNode[];
         edges: Connection[];
+        canvasMetadata: Record<string, unknown>;
+        providerProfile: string;
     }>): Promise<ApiResponse<Architecture>> {
         return this.request(`/architecture/${id}`, {
             method: 'PATCH',
@@ -115,6 +123,34 @@ class ApiClient {
 
     async deleteArchitecture(id: string): Promise<ApiResponse<null>> {
         return this.request(`/architecture/${id}`, { method: 'DELETE' });
+    }
+
+    async applyProviderMapping(id: string, provider: string, mode: 'replace-all' | 'keep-manual', nodes?: CanvasNode[]): Promise<ApiResponse<Architecture>> {
+        return this.request(`/architecture/${id}/provider-mapping`, { method: 'POST', body: JSON.stringify({ provider, mode, nodes }) });
+    }
+
+    async signUp(email: string, password: string, name: string): Promise<unknown> {
+        return this.request('/auth/sign-up/email', { method: 'POST', body: JSON.stringify({ email, password, name }) });
+    }
+
+    async signIn(email: string, password: string): Promise<unknown> {
+        return this.request('/auth/sign-in/email', { method: 'POST', body: JSON.stringify({ email, password }) });
+    }
+
+    async currentUser(): Promise<unknown> {
+        return this.request('/auth/get-session');
+    }
+
+    async signOut(): Promise<unknown> {
+        return this.request('/auth/sign-out', { method: 'POST' });
+    }
+
+    async getProjects(): Promise<ApiResponse<Array<{ id: string; name: string; description: string }>>> {
+        return this.request('/projects');
+    }
+
+    async createProject(data: { name: string; description?: string }): Promise<ApiResponse<{ id: string; name: string; description: string }>> {
+        return this.request('/projects', { method: 'POST', body: JSON.stringify(data) });
     }
 
     async forkArchitecture(id: string, name?: string): Promise<ApiResponse<Architecture>> {

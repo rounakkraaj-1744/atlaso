@@ -26,6 +26,9 @@ export function useCreateArchitecture() {
             description: string;
             nodes: CanvasNode[];
             edges: Connection[];
+            canvasMetadata?: Record<string, unknown>;
+            providerProfile?: string;
+            projectId?: string;
         }) => api.createArchitecture(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['architectures'] });
@@ -39,7 +42,7 @@ export function useUpdateArchitecture() {
     return useMutation({
         mutationFn: ({ id, data }: {
             id: string;
-            data: Partial<{ name: string; description: string; nodes: CanvasNode[]; edges: Connection[] }>;
+            data: Partial<{ name: string; description: string; nodes: CanvasNode[]; edges: Connection[]; canvasMetadata: Record<string, unknown>; providerProfile: string }>;
         }) => api.updateArchitecture(id, data),
         onSuccess: (_, { id }) => {
             queryClient.invalidateQueries({ queryKey: ['architectures'] });

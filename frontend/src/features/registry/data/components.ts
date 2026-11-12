@@ -1,6 +1,48 @@
 import type { ComponentRegistry } from '../../../types/registry';
 
 export const componentRegistry: ComponentRegistry = {
+  'web-client': {
+    type: 'web-client',
+    name: 'Web Client',
+    vendor: 'generic',
+    domain: 'client',
+    dataPatterns: ['sync', 'async'],
+    description: 'Browser-based client for desktop and responsive web experiences',
+    defaultThroughput: 1000,
+    defaultLatency: 100,
+    isManaged: false,
+    isControlPlane: false,
+    pack: 'core',
+    tags: ['client', 'web', 'browser', 'frontend'],
+  },
+  'mobile-client': {
+    type: 'mobile-client',
+    name: 'Mobile Client',
+    vendor: 'generic',
+    domain: 'client',
+    dataPatterns: ['sync', 'async'],
+    description: 'Native or cross-platform client for mobile devices',
+    defaultThroughput: 500,
+    defaultLatency: 150,
+    isManaged: false,
+    isControlPlane: false,
+    pack: 'core',
+    tags: ['client', 'mobile', 'ios', 'android'],
+  },
+  'tablet-client': {
+    type: 'tablet-client',
+    name: 'Tablet Client',
+    vendor: 'generic',
+    domain: 'client',
+    dataPatterns: ['sync', 'async'],
+    description: 'Client application optimized for tablet devices',
+    defaultThroughput: 500,
+    defaultLatency: 150,
+    isManaged: false,
+    isControlPlane: false,
+    pack: 'core',
+    tags: ['client', 'tablet', 'ios', 'android'],
+  },
   'vm': {
     type: 'vm',
     name: 'Virtual Machine',
@@ -1017,6 +1059,7 @@ export const vendorNames: Record<string, string> = {
 };
 
 export const domainNames: Record<string, string> = {
+  client: 'Client',
   compute: 'Compute',
   networking: 'Networking',
   storage: 'Storage',

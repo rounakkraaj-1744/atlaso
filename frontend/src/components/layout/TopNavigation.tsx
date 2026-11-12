@@ -92,10 +92,7 @@ export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeft
         </div>
 
         <div className="relative">
-          <button
-            onClick={() => setShowProviderDropdown((v) => !v)}
-            className="inline-flex items-center gap-2 rounded-md border border-blue-500/40 bg-transparent px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:-translate-y-0.5 hover:bg-blue-500/10 hover:text-white"
-          >
+          <button onClick={() => setShowProviderDropdown((v) => !v)} className="inline-flex items-center gap-2 rounded-md border border-blue-500/40 bg-transparent px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:bg-blue-500/10 hover:text-white">
             <Layers3 className="h-3.5 w-3.5 text-blue-400" />
             Apply Provider Mapping
             <ChevronDown className="h-3.5 w-3.5 text-slate-500" />

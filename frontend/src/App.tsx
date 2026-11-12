@@ -39,7 +39,9 @@ function AppContent() {
   const addConnection = useArchitectureStore((state) => state.addConnection);
   const updateConnection = useArchitectureStore((state) => state.updateConnection);
   const deleteConnection = useArchitectureStore((state) => state.deleteConnection);
-  const resetCanvas = useArchitectureStore((state) => state.resetCanvas);
+  const loadCanvas = useArchitectureStore((state) => state.loadCanvas);
+  const setActiveArchitectureId = useArchitectureStore((state) => state.setActiveArchitectureId);
+  const viewport = useArchitectureStore((state) => state.viewport);
   const constraints = useConstraintsStore((state) => state.constraints);
   const updateConstraints = useConstraintsStore((state) => state.updateConstraints);
   const createArchitecture = useCreateArchitecture();
@@ -82,12 +84,14 @@ function AppContent() {
     console.log('[Save] Edges:', connections);
 
     try {
-      await createArchitecture.mutateAsync({
+      const response = await createArchitecture.mutateAsync({
         name,
         description,
         nodes,
         edges: connections,
+        canvasMetadata: { viewport, constraints },
       });
+      if (response.data?.id) setActiveArchitectureId(response.data.id);
       setShowSaveModal(false);
     } catch (error) {
       console.error('Failed to save architecture:', error);
@@ -100,19 +104,9 @@ function AppContent() {
     console.log('[Load] Nodes:', architecture.nodes);
     console.log('[Load] Edges:', architecture.edges);
 
-    resetCanvas();
-
-    (architecture.nodes || []).forEach((node: CanvasNode) => {
-      addNode(node);
-    });
-
-    (architecture.edges || []).forEach((edge: Connection) => {
-      addConnection({
-        ...edge,
-        sourceId: edge.sourceId,
-        targetId: edge.targetId,
-      });
-    });
+    const savedViewport = architecture.canvasMetadata?.viewport;
+    loadCanvas(architecture.nodes || [], architecture.edges || [], savedViewport && typeof savedViewport === 'object' ? savedViewport as { x?: number; y?: number; zoom?: number } : undefined);
+    setActiveArchitectureId(architecture.id);
 
     setShowLoadModal(false);
   };
@@ -157,7 +151,7 @@ function AppContent() {
           <div className="flex-1 flex flex-col min-w-0">
             <div className="flex-1 flex relative min-h-0">
               <div className="flex-1 relative z-0">
-                <Canvas nodes={nodes} connections={connections} onAddNode={addNode} onUpdateNode={(node) => updateNode(node.id, node)} onNodePositionChange={setNodePosition} onDeleteNode={deleteNode} onDuplicateNode={duplicateNode} onUpdateConnection={(conn) => updateConnection(conn.id, conn)} onDeleteConnection={deleteConnection} onAddConnection={addConnection} selectedNode={selectedNode} setSelectedNode={setSelectedNode} selectedConnection={selectedConnection} setSelectedConnection={setSelectedConnection}
+                <Canvas nodes={nodes} connections={connections} onAddNode={addNode} onUpdateNode={(node) => updateNode(node.id, node)} onNodePositionChange={setNodePosition} onDeleteNode={deleteNode} onDuplicateNode={duplicateNode} onUpdateConnection={(conn) => updateConnection(conn.id, conn)} onDeleteConnection={deleteConnection} onAddConnection={addConnection} selectedNode={selectedNode} setSelectedNode={setSelectedNode} selectedConnection={selectedConnection} setSelectedConnection={setSelectedConnection} initialViewport={viewport} onViewportChange={(next) => useArchitectureStore.getState().setViewport(next)}
                   onOpenReplaceTechnology={(node) => {
                     setReplaceTechnologyNode(node);
                     setShowReplaceTechnologyModal(true);
@@ -216,6 +210,11 @@ function AppContent() {
           setReplaceTechnologyNode(null);
         }}
         primitiveName={replaceTechnologyNode?.config.name || 'Authentication'}
+        onApply={(provider, technology) => {
+          if (replaceTechnologyNode) {
+            updateNode(replaceTechnologyNode.id, { providerMapping: { provider, technology, mappingStatus: 'manual' } });
+          }
+        }}
       />
       <Toaster position="top-center" theme="dark" richColors />
     </DndProvider>

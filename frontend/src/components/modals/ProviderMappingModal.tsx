@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Layers3, Search, Sparkles, X } from 'lucide-react';
+import { ChevronDown, Layers3, Search, X } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import { api } from '../../lib/api';
+import { useUpdateArchitecture } from '../../features/architecture/hooks/useArchitectures';
+import { useArchitectureStore } from '../../features/architecture/store';
+import { toast } from 'sonner';
 
 export type ProviderOption = 'AWS' | 'Azure' | 'Google Cloud' | 'Cloudflare' | 'Civo';
 export type ApplyMode = 'replace-all' | 'keep-manual' | 'preview';
@@ -42,6 +46,11 @@ export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDrop
   const [provider, setProvider] = useState<ProviderOption>('AWS');
   const [isProviderOpen, setIsProviderOpen] = useState(false);
   const [applyMode, setApplyMode] = useState<ApplyMode>('keep-manual');
+  const activeArchitectureId = useArchitectureStore((state) => state.activeArchitectureId);
+  const canvasNodes = useArchitectureStore((state) => state.nodes);
+  const loadCanvas = useArchitectureStore((state) => state.loadCanvas);
+  const viewport = useArchitectureStore((state) => state.viewport);
+  const updateArchitecture = useUpdateArchitecture();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -56,6 +65,26 @@ export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDrop
   }, [isOpen, onClose]);
 
   const content = useMemo(() => {
+    const applyMapping = async () => {
+      if (applyMode === 'preview') {
+        toast.info('Preview mode is not available yet. Choose an apply mode.');
+        return;
+      }
+      if (!activeArchitectureId) {
+        toast.error('Save this architecture before applying provider mapping.');
+        return;
+      }
+      try {
+        const response = await api.applyProviderMapping(activeArchitectureId, provider, applyMode, canvasNodes);
+        if (response.data) {
+          loadCanvas(response.data.nodes, response.data.edges, viewport);
+          toast.success(`Applied ${provider} mapping.`);
+        }
+        onClose();
+      } catch {
+        toast.error('Could not apply provider mapping. Save the architecture and try again.');
+      }
+    };
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.94, y: 10 }}
@@ -153,14 +182,13 @@ export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDrop
           <button onClick={onClose} className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-white/5">
             Cancel
           </button>
-          <button onClick={onClose} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500">
-            <Sparkles className="h-4 w-4" />
+          <button onClick={() => void applyMapping()} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500">
             Apply Mapping
           </button>
         </div>
       </motion.div>
     );
-  }, [applyMode, onClose, provider]);
+  }, [applyMode, onClose, provider, activeArchitectureId, canvasNodes, viewport, loadCanvas]);
 
   return (
     <AnimatePresence>
@@ -173,6 +201,7 @@ interface ReplaceTechnologyModalProps {
   isOpen: boolean;
   onClose: () => void;
   primitiveName?: string;
+  onApply?: (provider: string, technology: string) => void;
 }
 
 const techRows = [
@@ -188,7 +217,7 @@ const techRows = [
   ['Custom...', 'User-defined implementation placeholder.'],
 ];
 
-export function ReplaceTechnologyModal({ isOpen, onClose, primitiveName = 'Authentication' }: ReplaceTechnologyModalProps) {
+export function ReplaceTechnologyModal({ isOpen, onClose, primitiveName = 'Authentication', onApply }: ReplaceTechnologyModalProps) {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(2);
 
@@ -260,6 +289,7 @@ export function ReplaceTechnologyModal({ isOpen, onClose, primitiveName = 'Authe
                 <button
                   key={name}
                   onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => setActiveIndex(index)}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition-all hover:-translate-y-0.5 hover:bg-white/5',
                     activeIndex === index ? 'border-blue-500/40 bg-blue-500/10' : 'border-transparent'
@@ -284,7 +314,7 @@ export function ReplaceTechnologyModal({ isOpen, onClose, primitiveName = 'Authe
             <button onClick={onClose} className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-white/5">
               Cancel
             </button>
-            <button onClick={onClose} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500">
+            <button onClick={() => { const selected = filtered[activeIndex]; if (selected) onApply?.(selected[0].startsWith('AWS') ? 'AWS' : selected[0] === 'Generic' ? 'Generic' : 'Custom', selected[0]); onClose(); }} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500">
               Replace Technology
             </button>
           </div>
