@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { ChevronDown, Layers3, Play, Download, Moon, Command, Undo2, Redo2, Loader2, Upload } from 'lucide-react';
+import { ChevronDown, Layers3, Play, Download, Moon, Command, Undo2, Redo2, Loader2, Upload, Save, FolderOpen, FolderPlus } from 'lucide-react';
 import type { CanvasNode } from '../../types';
 import { ProviderMappingDropdown } from '../modals/ProviderMappingModal';
+import type { AuthUser } from '../../lib/api';
+import type { Project } from '../../lib/api';
 
 interface TopNavigationProps {
   nodes: CanvasNode[];
@@ -11,10 +13,19 @@ interface TopNavigationProps {
   isRightPanelOpen: boolean;
   setIsRightPanelOpen: (open: boolean) => void;
   projectName?: string;
+  architectureName?: string;
   isSimulating?: boolean;
+  user?: AuthUser;
+  onSignOut?: () => void;
+  projects?: Project[];
+  activeProjectId?: string;
+  onProjectChange?: (id: string) => void;
+  onNewProject?: () => void;
+  onSave?: () => void;
+  onLoad?: () => void;
 }
 
-export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeftPanelOpen, isRightPanelOpen, setIsRightPanelOpen, projectName = "Untitled Architecture", isSimulating = false }: TopNavigationProps) {
+export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeftPanelOpen, isRightPanelOpen, setIsRightPanelOpen, projectName = "Untitled Architecture", architectureName = 'Untitled Architecture', isSimulating = false, user, onSignOut, projects = [], activeProjectId = '', onProjectChange, onNewProject, onSave, onLoad }: TopNavigationProps) {
   void isLeftPanelOpen;
   void setIsLeftPanelOpen;
   void isRightPanelOpen;
@@ -39,11 +50,9 @@ export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeft
 
         <div className="w-px h-4 bg-white/10 hidden md:block"></div>
 
-        <div className="hidden md:flex items-center gap-2 text-sm text-slate-300 hover:text-white cursor-pointer transition-colors px-2 py-1 rounded-md hover:bg-white/5">
-          {projectName}
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="opacity-50">
-            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+        <div className="hidden md:flex items-center gap-2 text-sm text-slate-300">
+          {projects.length > 0 ? <select aria-label="Open project" value={activeProjectId} onChange={(event) => onProjectChange?.(event.target.value)} className="max-w-44 bg-transparent text-sm text-slate-200 outline-none"><option value="" disabled>Select project</option>{projects.map((project) => <option className="bg-slate-900" key={project.id} value={project.id}>{project.name}</option>)}</select> : <span>{projectName}</span>}
+          <span className="text-slate-600">/</span><span className="max-w-40 truncate">{architectureName}</span>
         </div>
       </div>
 
@@ -102,6 +111,9 @@ export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeft
       </div>
 
       <div className="flex items-center gap-3">
+        <button onClick={onNewProject} className="hidden lg:inline-flex items-center gap-1.5 rounded-md border border-white/10 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-white/5"><FolderPlus className="h-3.5 w-3.5"/>Project</button>
+        <button onClick={onLoad} className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-white/10 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-white/5"><FolderOpen className="h-3.5 w-3.5"/>Open</button>
+        <button onClick={onSave} className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500"><Save className="h-3.5 w-3.5"/>Save</button>
         <div className="hidden md:flex items-center gap-1">
           <button className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-white/5 transition-colors tooltip-trigger" title="Undo (⌘Z)">
             <Undo2 className="w-4 h-4" />
@@ -154,8 +166,14 @@ export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeft
           <Moon className="w-4 h-4" />
         </button>
 
-        <div className="w-7 h-7 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-[11px] font-semibold text-white cursor-pointer ml-1">
-          RK
+        <div className="group relative ml-1">
+          <button title={user?.email ?? 'Account'} className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-600 bg-slate-700 text-[11px] font-semibold text-white">
+            {(user?.name || user?.email || 'A').slice(0, 2).toUpperCase()}
+          </button>
+          <div className="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-56 rounded-xl border border-white/10 bg-[#0b0f16] p-2 opacity-0 shadow-xl transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+            <div className="truncate px-3 py-2 text-xs text-slate-400">{user?.email}</div>
+            <button onClick={onSignOut} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-200 hover:bg-white/5">Sign out</button>
+          </div>
         </div>
       </div>
     </header>

@@ -11,8 +11,10 @@ interface ArchitectureState {
     nodes: CanvasNode[];
     connections: Connection[];
     activeArchitectureId: string | null;
+    activeArchitectureVersion: number | null;
 
     viewport: Viewport;
+    canvasDocumentProperties: Record<string, unknown>;
     selectedNodeId: string | null;
     selectedConnectionId: string | null;
 
@@ -25,18 +27,22 @@ interface ArchitectureState {
     updateConnection: (id: string, updates: Partial<Connection>) => void;
     deleteConnection: (id: string) => void;
     setViewport: (viewport: Partial<Viewport>) => void;
+    setCanvasDocumentProperties: (properties: Record<string, unknown>) => void;
     setSelectedNode: (id: string | null) => void;
     setSelectedConnection: (id: string | null) => void;
     resetCanvas: () => void;
     loadCanvas: (nodes: CanvasNode[], connections: Connection[], viewport?: Partial<Viewport>) => void;
     setActiveArchitectureId: (id: string | null) => void;
+    setActiveArchitecture: (id: string | null, version: number | null) => void;
 }
 
 const initialState = {
     nodes: [],
     connections: [],
     activeArchitectureId: null,
+    activeArchitectureVersion: null,
     viewport: { x: 0, y: 0, zoom: 1 },
+    canvasDocumentProperties: {},
     selectedNodeId: null,
     selectedConnectionId: null,
 };
@@ -110,9 +116,18 @@ export const useArchitectureStore = create<ArchitectureState>((set) => ({
         })),
 
     setViewport: (viewport) =>
-        set((state) => ({
-            viewport: { ...state.viewport, ...viewport },
-        })),
+        set((state) => {
+            const nextViewport = { ...state.viewport, ...viewport };
+            if (
+                nextViewport.x === state.viewport.x &&
+                nextViewport.y === state.viewport.y &&
+                nextViewport.zoom === state.viewport.zoom
+            ) return state;
+
+            return { viewport: nextViewport };
+        }),
+
+    setCanvasDocumentProperties: (canvasDocumentProperties) => set({ canvasDocumentProperties }),
 
     setSelectedNode: (id) =>
         set({ selectedNodeId: id, selectedConnectionId: null }),
@@ -123,4 +138,5 @@ export const useArchitectureStore = create<ArchitectureState>((set) => ({
     resetCanvas: () => set(initialState),
     loadCanvas: (nodes, connections, viewport) => set({ ...initialState, nodes, connections, viewport: { ...initialState.viewport, ...viewport } }),
     setActiveArchitectureId: (activeArchitectureId) => set({ activeArchitectureId }),
+    setActiveArchitecture: (activeArchitectureId, activeArchitectureVersion) => set({ activeArchitectureId, activeArchitectureVersion }),
 }));

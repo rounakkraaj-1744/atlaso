@@ -4,7 +4,7 @@ Express and TypeScript API for Atlaso, using PostgreSQL, Drizzle ORM, and Better
 
 ## Local setup
 
-Requirements: Node.js 20+, PostgreSQL 15+.
+Requirements: Node.js 20+ and PostgreSQL 15+.
 
 1. Copy `.env.example` to `.env` and set `DATABASE_URL` and a random `BETTER_AUTH_SECRET` of at least 32 characters.
 2. Create the PostgreSQL database named in `DATABASE_URL`.
@@ -35,15 +35,17 @@ The existing frontend contract is kept at `/api/architecture`:
 - `GET`, `PATCH`, `DELETE /api/architecture/:id`
 - `POST /api/architecture/:id/fork`
 - `POST /api/architecture/:id/provider-mapping` with `{ provider, mode }`
-- Project CRUD under `/api/projects`
-- Equivalent versioned route roots are available under `/api/v1`
+- Project CRUD under `/api/v1/projects` (legacy `/api/projects` remains available)
+- Project-scoped architecture CRUD under `/api/v1/projects/:projectId/architectures`
+- Architecture CRUD under `/api/v1/architectures`
+- `GET` and revision-checked `PUT /api/v1/architectures/:id/canvas` persist the complete canvas JSONB document atomically
 - `GET /api/health` checks database connectivity
 
-Architecture updates increment `version`; clients may send `expectedVersion` to detect stale saves. Canvas arrays are returned exactly as stored. Provider mapping with `keep-manual` preserves nodes whose `providerMapping.mappingStatus` is `manual`.
+Architecture updates increment `version`; canvas saves use the separate `ArchitectureDocument.revision` and clients must send `expectedRevision`. A stale canvas save returns HTTP 409 with the current revision. Canvas nodes, connections, viewport, settings, and unknown document properties are stored unchanged in JSONB. Provider mapping with `keep-manual` preserves nodes whose `providerMapping.mappingStatus` is `manual`.
 
 ## Current scope and limitations
 
-- The frontend currently saves a new architecture from its Save dialog and loads or deletes saved architectures. Backend project APIs exist, but the UI has not yet grown project CRUD or architecture-in-project navigation. If no project ID is supplied, the API creates a project named after the architecture to retain compatibility with the current UI.
+- The frontend supports project creation and selection, creates multiple architectures in the selected project, and restores the last opened architecture after refresh. If no project ID is supplied to the legacy architecture API, the API creates a project named after the architecture for compatibility.
 - The frontend’s analysis/simulation panel still runs its existing client-side estimator. It is not a measured production simulation. Backend simulation persistence, comments, AI documentation generation, and validation endpoints are not implemented yet.
 - Provider mapping catalogs are starter mappings and should be expanded with product-reviewed mappings. Preview mode currently explains that preview is unavailable.
-- No live PostgreSQL instance was available during implementation, so migration application and DB-backed endpoint workflows still require local verification.
+- Apply the additive `0002_new_lord_tyger.sql` migration with `npm run db:migrate` before starting the updated API against an existing database.

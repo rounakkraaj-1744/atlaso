@@ -73,6 +73,15 @@ export const architectures = pgTable('architectures', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index('architectures_project_updated_idx').on(table.projectId, table.updatedAt)]);
 
+export const architectureDocuments = pgTable('architecture_documents', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  architectureId: uuid('architecture_id').notNull().unique().references(() => architectures.id, { onDelete: 'cascade' }),
+  document: jsonb('document').$type<Record<string, unknown>>().notNull().default({ nodes: [], connections: [], viewport: { x: 0, y: 0, zoom: 1 } }),
+  revision: integer('revision').notNull().default(1),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index('architecture_documents_architecture_idx').on(table.architectureId)]);
+
 export const projectsRelations = relations(projects, ({ one, many }) => ({
   owner: one(users, { fields: [projects.ownerId], references: [users.id] }),
   architectures: many(architectures),
@@ -80,4 +89,5 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 
 export const architecturesRelations = relations(architectures, ({ one }) => ({
   project: one(projects, { fields: [architectures.projectId], references: [projects.id] }),
+  document: one(architectureDocuments, { fields: [architectures.id], references: [architectureDocuments.architectureId] }),
 }));

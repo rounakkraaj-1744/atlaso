@@ -1,10 +1,21 @@
 import { Router } from 'express';
 import { and, desc, eq, sql } from 'drizzle-orm';
+import { z } from 'zod';
 import { db } from '../../infrastructure/database/client.js';
 import { architectures, projects } from '../../infrastructure/database/schema.js';
 import { createArchitectureSchema, providerMappingSchema, updateArchitectureSchema } from './architecture.schemas.js';
+import { createCanvasDocument, toCanvasDocument } from './architecture.repository.js';
+import { CanvasServiceError, getCanvas, putCanvas } from './canvas.service.js';
+import type { CanvasDocument } from './canvas.schemas.js';
 
 export const architecturesRouter = Router();
+architecturesRouter.param('id', (_req, res, next, value) => {
+  if (!z.string().uuid().safeParse(value).success) {
+    res.status(400).json({ success: false, message: 'Invalid architecture ID', timestamp: new Date().toISOString() });
+    return;
+  }
+  next();
+});
 
 const stamp = () => new Date().toISOString();
 
@@ -64,6 +75,7 @@ architecturesRouter.post('/', async (req, res) => {
       });
   }
   const [row] = await db.insert(architectures).values({ ...input, projectId }).returning();
+  await createCanvasDocument(row!.id, toCanvasDocument(input.nodes, input.edges, input.canvasMetadata, input.providerProfile));
 
   res.status(201).json({
     success: true,
@@ -144,20 +156,42 @@ architecturesRouter.post('/:id/fork', async (req, res) => {
 });
 
 architecturesRouter.post('/:id/provider-mapping', async (req, res) => {
-  const { provider, mode, nodes: submittedNodes } = providerMappingSchema.extend({ nodes: createArchitectureSchema.shape.nodes.optional() }).parse(req.body);
+  const { provider, mode, nodes: submittedNodes, edges: submittedEdges, canvasMetadata } = providerMappingSchema.extend({
+    nodes: createArchitectureSchema.shape.nodes.optional(),
+    edges: createArchitectureSchema.shape.edges.optional(),
+    canvasMetadata: createArchitectureSchema.shape.canvasMetadata.optional(),
+  }).parse(req.body);
   const current = await ownedArchitecture(req.params.id!, req.userId!);
   if (!current) return res.status(404).json({ success: false, message: 'Architecture not found', timestamp: stamp() });
-  const nodes = (submittedNodes ?? (Array.isArray(current.nodes) ? current.nodes : [])).map((item) => {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) return item;
+  const canvas = await getCanvas(current.id, req.userId!);
+  const nodes = (submittedNodes ?? canvas.document.nodes).map((item): CanvasDocument['nodes'][number] => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return item as CanvasDocument['nodes'][number];
     const node = item as Record<string, unknown>;
     const mapping = node.providerMapping && typeof node.providerMapping === 'object' ? node.providerMapping as Record<string, unknown> : {};
-    if (mode === 'keep-manual' && mapping.mappingStatus === 'manual') return item;
+    if (mode === 'keep-manual' && mapping.mappingStatus === 'manual') return node as CanvasDocument['nodes'][number];
     const technology = providerTechnology(provider, String(node.type ?? ''));
-    return { ...node, providerMapping: { provider, technology, mappingStatus: 'profile' } };
+    return { ...node, providerMapping: { provider, technology, mappingStatus: 'profile' } } as unknown as CanvasDocument['nodes'][number];
   });
-  const [row] = await db.update(architectures).set({ nodes, providerProfile: provider, version: current.version + 1, updatedAt: new Date() }).where(and(eq(architectures.id, current.id), eq(architectures.version, current.version))).returning();
-  if (!row) return res.status(409).json({ success: false, message: 'Architecture changed during mapping; reload and try again', timestamp: stamp() });
-  res.json({ success: true, data: dto(row), timestamp: stamp() });
+  const submittedMetadata = canvasMetadata ?? {};
+  const { viewport: submittedViewport, ...metadataUpdates } = submittedMetadata;
+  const document: CanvasDocument = {
+    ...canvas.document,
+    nodes,
+    connections: submittedEdges ?? canvas.document.connections,
+    providerProfile: provider,
+    ...(submittedViewport && typeof submittedViewport === 'object' ? { viewport: submittedViewport as { x: number; y: number; zoom: number } } : {}),
+    metadata: { ...(canvas.document.metadata as Record<string, unknown> ?? {}), ...metadataUpdates },
+  };
+  let savedCanvas: Awaited<ReturnType<typeof putCanvas>>;
+  try {
+    savedCanvas = await putCanvas(current.id, req.userId!, canvas.revision, document, {});
+  } catch (error) {
+    if (error instanceof CanvasServiceError && error.status === 409) return res.status(409).json({ success: false, message: error.message, timestamp: stamp() });
+    throw error;
+  }
+  const row = await ownedArchitecture(current.id, req.userId!);
+  if (!row) return res.status(404).json({ success: false, message: 'Architecture not found', timestamp: stamp() });
+  res.json({ success: true, data: { ...dto(row), document: savedCanvas.document, revision: savedCanvas.revision }, timestamp: stamp() });
 });
 
 function providerTechnology(provider: string, type: string): string {

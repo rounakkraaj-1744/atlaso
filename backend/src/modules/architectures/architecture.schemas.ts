@@ -28,7 +28,7 @@ export const createArchitectureSchema = z.object({
   providerProfile: z.string().max(80).default('Generic'),
 });
 
-export const updateArchitectureSchema = createArchitectureSchema.partial().extend({
+export const updateArchitectureSchema = createArchitectureSchema.omit({ projectId: true }).partial().extend({
   expectedVersion: z.number().int().positive().optional()
 });
 

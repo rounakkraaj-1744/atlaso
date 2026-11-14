@@ -25,9 +25,35 @@ export interface Architecture {
     edges: Connection[];
     canvasMetadata?: Record<string, unknown>;
     providerProfile?: string;
+    projectId?: string;
     version: number;
     parentId: string | null;
     createdAt: string;
+    updatedAt: string;
+    type?: 'HLD' | 'LLD' | 'DATABASE' | 'DEPLOYMENT';
+    revision?: number;
+    document?: CanvasDocument;
+}
+
+export interface CanvasDocument {
+    nodes: CanvasNode[];
+    connections: Connection[];
+    viewport?: { x: number; y: number; zoom: number };
+    [key: string]: unknown;
+}
+
+export interface Project {
+    id: string;
+    name: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CanvasResponse {
+    architectureId: string;
+    document: CanvasDocument;
+    revision: number;
     updatedAt: string;
 }
 
@@ -42,6 +68,18 @@ export interface EvaluationOutput {
     analysis: AnalysisResult;
     suggestions: Suggestion[];
     maxThroughputRps: number;
+}
+
+export interface AuthUser {
+    id: string;
+    name: string;
+    email: string;
+    image?: string | null;
+}
+
+export interface AuthSession {
+    user: AuthUser;
+    session: { id: string; expiresAt: string };
 }
 
 class ApiClient {
@@ -66,14 +104,13 @@ class ApiClient {
             });
 
             if (!response.ok) {
-                const error = await response.json().catch(() => ({ message: 'Request failed' }));
+                const error: { message?: string; error?: string } = await response.json().catch(() => ({ message: 'Request failed' }));
                 console.error(`[API] Error ${response.status}:`, error);
-                throw new Error(error.message || `HTTP ${response.status}`);
+                throw new Error(error.message || error.error || `HTTP ${response.status}`);
             }
 
-            const data = await response.json();
-            console.log(`[API] Response:`, data);
-            return data;
+            if (response.status === 204) return undefined as T;
+            return await response.json() as T;
         } catch (err) {
             console.error(`[API] Request failed:`, err);
             throw err;
@@ -84,8 +121,9 @@ class ApiClient {
         return this.request('/health');
     }
 
-    async getArchitectures(page = 1, limit = 20): Promise<PaginatedResponse<Architecture>> {
-        return this.request(`/architecture?page=${page}&limit=${limit}`);
+    async getArchitectures(page = 1, limit = 20, projectId?: string): Promise<PaginatedResponse<Architecture>> {
+        const path = projectId ? `/v1/projects/${projectId}/architectures` : '/architecture';
+        return this.request(`${path}?page=${page}&limit=${limit}`);
     }
 
     async getArchitecture(id: string): Promise<ApiResponse<Architecture>> {
@@ -100,10 +138,13 @@ class ApiClient {
         canvasMetadata?: Record<string, unknown>;
         providerProfile?: string;
         projectId?: string;
+        type?: 'HLD' | 'LLD' | 'DATABASE' | 'DEPLOYMENT';
     }): Promise<ApiResponse<Architecture>> {
+        const { projectId, ...body } = data;
+        if (projectId) return this.request(`/v1/projects/${projectId}/architectures`, { method: 'POST', body: JSON.stringify(body) });
         return this.request('/architecture', {
             method: 'POST',
-            body: JSON.stringify(data),
+            body: JSON.stringify(body),
         });
     }
 
@@ -114,6 +155,7 @@ class ApiClient {
         edges: Connection[];
         canvasMetadata: Record<string, unknown>;
         providerProfile: string;
+        expectedVersion: number;
     }>): Promise<ApiResponse<Architecture>> {
         return this.request(`/architecture/${id}`, {
             method: 'PATCH',
@@ -125,32 +167,52 @@ class ApiClient {
         return this.request(`/architecture/${id}`, { method: 'DELETE' });
     }
 
-    async applyProviderMapping(id: string, provider: string, mode: 'replace-all' | 'keep-manual', nodes?: CanvasNode[]): Promise<ApiResponse<Architecture>> {
-        return this.request(`/architecture/${id}/provider-mapping`, { method: 'POST', body: JSON.stringify({ provider, mode, nodes }) });
+    async applyProviderMapping(id: string, provider: string, mode: 'replace-all' | 'keep-manual', nodes?: CanvasNode[], edges?: Connection[], canvasMetadata?: Record<string, unknown>): Promise<ApiResponse<Architecture>> {
+        return this.request(`/architecture/${id}/provider-mapping`, { method: 'POST', body: JSON.stringify({ provider, mode, nodes, edges, canvasMetadata }) });
     }
 
-    async signUp(email: string, password: string, name: string): Promise<unknown> {
+    async signUp(email: string, password: string, name: string): Promise<AuthSession> {
         return this.request('/auth/sign-up/email', { method: 'POST', body: JSON.stringify({ email, password, name }) });
     }
 
-    async signIn(email: string, password: string): Promise<unknown> {
+    async signIn(email: string, password: string): Promise<AuthSession> {
         return this.request('/auth/sign-in/email', { method: 'POST', body: JSON.stringify({ email, password }) });
     }
 
-    async currentUser(): Promise<unknown> {
+    async currentUser(): Promise<AuthSession | null> {
         return this.request('/auth/get-session');
     }
 
-    async signOut(): Promise<unknown> {
+    async signOut(): Promise<void> {
         return this.request('/auth/sign-out', { method: 'POST' });
     }
 
-    async getProjects(): Promise<ApiResponse<Array<{ id: string; name: string; description: string }>>> {
-        return this.request('/projects');
+    async getProjects(): Promise<ApiResponse<Project[]>> {
+        return this.request('/v1/projects');
     }
 
-    async createProject(data: { name: string; description?: string }): Promise<ApiResponse<{ id: string; name: string; description: string }>> {
-        return this.request('/projects', { method: 'POST', body: JSON.stringify(data) });
+    async createProject(data: { name: string; description?: string }): Promise<ApiResponse<Project>> {
+        return this.request('/v1/projects', { method: 'POST', body: JSON.stringify(data) });
+    }
+
+    async getProject(id: string): Promise<ApiResponse<Project & { architectures: Architecture[] }>> {
+        return this.request(`/v1/projects/${id}`);
+    }
+
+    async updateProject(id: string, data: Partial<Pick<Project, 'name' | 'description'>>): Promise<ApiResponse<Project>> {
+        return this.request(`/v1/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+    }
+
+    async deleteProject(id: string): Promise<ApiResponse<null>> {
+        return this.request(`/v1/projects/${id}`, { method: 'DELETE' });
+    }
+
+    async getCanvas(id: string): Promise<ApiResponse<CanvasResponse>> {
+        return this.request(`/v1/architectures/${id}/canvas`);
+    }
+
+    async saveCanvas(id: string, document: CanvasDocument, expectedRevision: number, metadata?: { name?: string; description?: string; type?: 'HLD' | 'LLD' | 'DATABASE' | 'DEPLOYMENT' }): Promise<ApiResponse<CanvasResponse>> {
+        return this.request(`/v1/architectures/${id}/canvas`, { method: 'PUT', body: JSON.stringify({ document, expectedRevision, ...metadata }) });
     }
 
     async forkArchitecture(id: string, name?: string): Promise<ApiResponse<Architecture>> {

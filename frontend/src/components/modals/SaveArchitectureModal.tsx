@@ -4,15 +4,18 @@ import { X, Save } from 'lucide-react';
 interface SaveArchitectureModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (name: string, description: string) => void;
+    onSave: (name: string, description: string, type: 'HLD' | 'LLD' | 'DATABASE' | 'DEPLOYMENT') => void;
     isLoading?: boolean;
     defaultName?: string;
     defaultDescription?: string;
+    projectName?: string;
+    defaultType?: 'HLD' | 'LLD' | 'DATABASE' | 'DEPLOYMENT';
 }
 
-export function SaveArchitectureModal({ isOpen, onClose, onSave, isLoading, defaultName = '', defaultDescription = '' }: SaveArchitectureModalProps) {
+export function SaveArchitectureModal({ isOpen, onClose, onSave, isLoading, defaultName = '', defaultDescription = '', projectName, defaultType = 'HLD' }: SaveArchitectureModalProps) {
     const [name, setName] = useState(defaultName);
     const [description, setDescription] = useState(defaultDescription);
+    const [type, setType] = useState<'HLD' | 'LLD' | 'DATABASE' | 'DEPLOYMENT'>(defaultType);
 
     if (!isOpen)
         return null;
@@ -20,7 +23,7 @@ export function SaveArchitectureModal({ isOpen, onClose, onSave, isLoading, defa
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (name.trim())
-            onSave(name.trim(), description.trim());
+            onSave(name.trim(), description.trim(), type);
     };
 
     return (
@@ -29,8 +32,9 @@ export function SaveArchitectureModal({ isOpen, onClose, onSave, isLoading, defa
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
                     <div className="flex items-center gap-3">
                         <Save className="w-5 h-5 text-green-400" />
-                        <h2 className="text-lg font-semibold text-slate-100">Save Architecture</h2>
+                        <div><h2 className="text-lg font-semibold text-slate-100">Save Architecture</h2>{projectName && <p className="text-xs text-slate-400">Project: {projectName}</p>}</div>
                     </div>
+
                     <button
                         onClick={onClose}
                         className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
@@ -40,6 +44,7 @@ export function SaveArchitectureModal({ isOpen, onClose, onSave, isLoading, defa
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <div><label className="mb-2 block text-sm font-medium text-slate-300">Architecture type</label><select value={type} onChange={(event) => setType(event.target.value as typeof type)} className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-slate-100"><option value="HLD">High level design</option><option value="LLD">Low level design</option><option value="DATABASE">Database</option><option value="DEPLOYMENT">Deployment</option></select></div>
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                             Name *

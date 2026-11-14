@@ -1,19 +1,34 @@
 import { Router } from 'express';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../../infrastructure/database/client.js';
 import { architectures, projects } from '../../infrastructure/database/schema.js';
+import { createCanvasDocument, toCanvasDocument } from '../architectures/architecture.repository.js';
+import { createArchitectureSchema } from '../architectures/architecture.schemas.js';
 
 export const projectsRouter = Router();
+projectsRouter.param('projectId', (_req, res, next, value) => {
+  if (!z.string().uuid().safeParse(value).success) {
+    res.status(400).json({ success: false, message: 'Invalid project ID', timestamp: new Date().toISOString() });
+    return;
+  }
+  next();
+});
 const projectInput = z.object({ name: z.string().trim().min(1).max(160), description: z.string().max(10000).default('') });
 const stamp = () => new Date().toISOString();
 const projectDto = (row: typeof projects.$inferSelect) => ({ id: row.id, name: row.name, description: row.description, createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() });
+const architectureDto = (row: typeof architectures.$inferSelect) => ({ id: row.id, projectId: row.projectId, name: row.name, description: row.description, type: row.type, version: row.version, providerProfile: row.providerProfile, nodes: row.nodes, edges: row.edges, canvasMetadata: row.canvasMetadata, createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() });
 
 projectsRouter.get('/', async (req, res) => {
-  const rows = await db.select().from(projects).where(eq(projects.ownerId, req.userId!)).orderBy(desc(projects.updatedAt));
+  const page = Math.max(1, Number.parseInt(String(req.query.page ?? '1'), 10) || 1);
+  const limit = Math.min(100, Math.max(1, Number.parseInt(String(req.query.limit ?? '20'), 10) || 20));
+  const rows = await db.select().from(projects).where(eq(projects.ownerId, req.userId!)).orderBy(desc(projects.updatedAt)).limit(limit).offset((page - 1) * limit);
+  const [count] = await db.select({ value: sql<number>`count(*)::int` }).from(projects).where(eq(projects.ownerId, req.userId!));
+  const total = count?.value ?? 0;
   res.json({
     success: true,
     data: rows.map(projectDto),
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     timestamp: stamp()
   });
 });
@@ -41,10 +56,30 @@ projectsRouter.get('/:projectId', async (req, res) => {
     success: true,
     data: {
       ...projectDto(row),
-      architectures: archs
+      architectures: archs.map(architectureDto)
     },
     timestamp: stamp()
   });
+});
+
+projectsRouter.get('/:projectId/architectures', async (req, res) => {
+  const [project] = await db.select({ id: projects.id }).from(projects).where(and(eq(projects.id, req.params.projectId!), eq(projects.ownerId, req.userId!))).limit(1);
+  if (!project) return res.status(404).json({ success: false, message: 'Project not found', timestamp: stamp() });
+  const page = Math.max(1, Number.parseInt(String(req.query.page ?? '1'), 10) || 1);
+  const limit = Math.min(100, Math.max(1, Number.parseInt(String(req.query.limit ?? '20'), 10) || 20));
+  const rows = await db.select().from(architectures).where(eq(architectures.projectId, project.id)).orderBy(desc(architectures.updatedAt)).limit(limit).offset((page - 1) * limit);
+  const [count] = await db.select({ value: sql<number>`count(*)::int` }).from(architectures).where(eq(architectures.projectId, project.id));
+  const total = count?.value ?? 0;
+  res.json({ success: true, data: rows.map(architectureDto), pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }, timestamp: stamp() });
+});
+
+projectsRouter.post('/:projectId/architectures', async (req, res) => {
+  const input = createArchitectureSchema.omit({ projectId: true }).parse(req.body);
+  const [project] = await db.select({ id: projects.id }).from(projects).where(and(eq(projects.id, req.params.projectId!), eq(projects.ownerId, req.userId!))).limit(1);
+  if (!project) return res.status(404).json({ success: false, message: 'Project not found', timestamp: stamp() });
+  const [row] = await db.insert(architectures).values({ ...input, projectId: project.id }).returning();
+  await createCanvasDocument(row!.id, toCanvasDocument(input.nodes, input.edges, input.canvasMetadata, input.providerProfile));
+  res.status(201).json({ success: true, data: architectureDto(row!), timestamp: stamp() });
 });
 
 projectsRouter.patch('/:projectId', async (req, res) => {

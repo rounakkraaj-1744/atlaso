@@ -7,11 +7,12 @@ interface LoadArchitectureModalProps {
     isOpen: boolean;
     onClose: () => void;
     onLoad: (architecture: Architecture) => void;
+    projectId?: string;
 }
 
-export function LoadArchitectureModal({ isOpen, onClose, onLoad }: LoadArchitectureModalProps) {
+export function LoadArchitectureModal({ isOpen, onClose, onLoad, projectId }: LoadArchitectureModalProps) {
     const [page, setPage] = useState(1);
-    const { data, isLoading, error } = useArchitectures(page, 10);
+    const { data, isLoading, error } = useArchitectures(page, 10, projectId);
     const deleteArchitecture = useDeleteArchitecture();
 
     if (!isOpen)
@@ -59,7 +60,7 @@ export function LoadArchitectureModal({ isOpen, onClose, onLoad }: LoadArchitect
 
                     {data?.data && data.data.length === 0 && (
                         <div className="text-center py-12 text-slate-500">
-                            No saved architectures yet. Create one using the Save button.
+                            No architectures in this project yet. Save the canvas to create one.
                         </div>
                     )}
 

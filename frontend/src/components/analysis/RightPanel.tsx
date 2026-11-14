@@ -287,11 +287,7 @@ export function RightPanel({
             <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">
               Type
             </label>
-            <select
-              value={selectedConnection.type}
-              onChange={(e) => handleUpdateConnectionType(e.target.value as 'sync' | 'async')}
-              className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-md text-slate-200 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50"
-            >
+            <select value={selectedConnection.type} onChange={(e) => handleUpdateConnectionType(e.target.value as 'sync' | 'async')} className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-md text-slate-200 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50" >
               <option value="sync">Synchronous (blocking)</option>
               <option value="async">Asynchronous (non-blocking)</option>
             </select>

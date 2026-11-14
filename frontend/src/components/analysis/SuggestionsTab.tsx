@@ -31,46 +31,37 @@ export function SuggestionsTab({ suggestions }: SuggestionsTabProps) {
 
             <div className="space-y-3">
                 {suggestions.map((suggestion) => (
-                    <div
-                        key={suggestion.id}
-                        className={`p-4 rounded-lg border transition-colors ${suggestion.impact === 'high'
+                    <div key={suggestion.id} className={`p-4 rounded-lg border transition-colors ${suggestion.impact === 'high'
                             ? 'bg-emerald-500/5 border-emerald-500/30 hover:border-emerald-500/50'
                             : suggestion.impact === 'medium'
                                 ? 'bg-blue-500/5 border-blue-500/30 hover:border-blue-500/50'
                                 : 'bg-bg-tertiary border-border hover:border-accent-blue/50'
-                            }`}
-                    >
+                            }`} >
                         <div className="flex items-start gap-3">
-                            <div
-                                className={`shrink-0 w-8 h-8 rounded flex items-center justify-center mt-0.5 ${suggestion.impact === 'high'
+                            <div className={`shrink-0 w-8 h-8 rounded flex items-center justify-center mt-0.5 ${suggestion.impact === 'high'
                                     ? 'bg-emerald-500/20'
                                     : suggestion.impact === 'medium'
                                         ? 'bg-blue-500/20'
                                         : 'bg-accent-blue/20'
-                                    }`}
-                            >
-                                <Lightbulb
-                                    className={`w-4 h-4 ${suggestion.impact === 'high'
+                                    }`} >
+                                <Lightbulb className={`w-4 h-4 ${suggestion.impact === 'high'
                                         ? 'text-emerald-400'
                                         : suggestion.impact === 'medium'
                                             ? 'text-blue-400'
                                             : 'text-accent-blue'
-                                        }`}
-                                />
+                                        }`} />
                             </div>
                             <div className="flex-1 min-w-0 space-y-2">
                                 <div className="flex items-center gap-2">
                                     <h4 className="text-sm font-semibold text-text-primary">
                                         {suggestion.title}
                                     </h4>
-                                    <span
-                                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${suggestion.impact === 'high'
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${suggestion.impact === 'high'
                                             ? 'bg-emerald-500/20 text-emerald-300'
                                             : suggestion.impact === 'medium'
                                                 ? 'bg-blue-500/20 text-blue-300'
                                                 : 'bg-slate-700/50 text-slate-400'
-                                            }`}
-                                    >
+                                            }`} >
                                         {suggestion.impact}
                                     </span>
                                 </div>

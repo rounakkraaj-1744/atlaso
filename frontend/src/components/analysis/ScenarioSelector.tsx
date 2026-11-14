@@ -40,14 +40,10 @@ export function ScenarioSelector({ currentScenario, onScenarioChange }: Scenario
                     const isActive = currentScenario === key;
 
                     return (
-                        <button
-                            key={key}
-                            onClick={() => onScenarioChange(key)}
-                            className={`p-2 rounded-lg border transition-all ${isActive
+                        <button key={key} onClick={() => onScenarioChange(key)} className={`p-2 rounded-lg border transition-all ${isActive
                                 ? scenarioColors[key] + ' ring-2 ring-current'
                                 : 'bg-bg-tertiary border-border hover:border-accent-blue/50'
-                                }`}
-                        >
+                                }`} >
                             <div className="flex items-start gap-2">
                                 <Icon className={`w-3.5 h-3.5 mt-0.5 ${isActive ? '' : 'text-slate-500'}`} />
                                 <div className="flex-1 min-w-0 text-left">

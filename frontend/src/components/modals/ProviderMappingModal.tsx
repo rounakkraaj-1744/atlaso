@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, Layers3, Search, X } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { api } from '../../lib/api';
-import { useUpdateArchitecture } from '../../features/architecture/hooks/useArchitectures';
 import { useArchitectureStore } from '../../features/architecture/store';
 import { toast } from 'sonner';
 
@@ -47,10 +46,12 @@ export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDrop
   const [isProviderOpen, setIsProviderOpen] = useState(false);
   const [applyMode, setApplyMode] = useState<ApplyMode>('keep-manual');
   const activeArchitectureId = useArchitectureStore((state) => state.activeArchitectureId);
+  const setActiveArchitecture = useArchitectureStore((state) => state.setActiveArchitecture);
+  const setCanvasDocumentProperties = useArchitectureStore((state) => state.setCanvasDocumentProperties);
   const canvasNodes = useArchitectureStore((state) => state.nodes);
+  const canvasEdges = useArchitectureStore((state) => state.connections);
   const loadCanvas = useArchitectureStore((state) => state.loadCanvas);
   const viewport = useArchitectureStore((state) => state.viewport);
-  const updateArchitecture = useUpdateArchitecture();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -75,9 +76,11 @@ export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDrop
         return;
       }
       try {
-        const response = await api.applyProviderMapping(activeArchitectureId, provider, applyMode, canvasNodes);
+        const response = await api.applyProviderMapping(activeArchitectureId, provider, applyMode, canvasNodes, canvasEdges, { viewport });
         if (response.data) {
           loadCanvas(response.data.nodes, response.data.edges, viewport);
+          if (response.data.document) setCanvasDocumentProperties(response.data.document);
+          setActiveArchitecture(response.data.id, response.data.revision ?? response.data.version);
           toast.success(`Applied ${provider} mapping.`);
         }
         onClose();
@@ -188,7 +191,7 @@ export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDrop
         </div>
       </motion.div>
     );
-  }, [applyMode, onClose, provider, activeArchitectureId, canvasNodes, viewport, loadCanvas]);
+  }, [applyMode, onClose, provider, activeArchitectureId, canvasNodes, canvasEdges, viewport, loadCanvas, setActiveArchitecture, setCanvasDocumentProperties, isProviderOpen]);
 
   return (
     <AnimatePresence>

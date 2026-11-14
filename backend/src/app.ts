@@ -8,6 +8,7 @@ import { requireAuth } from './common/middleware/auth.js';
 import { errorHandler, notFound } from './common/errors/handler.js';
 import { projectsRouter } from './modules/projects/projects.routes.js';
 import { architecturesRouter } from './modules/architectures/architectures.routes.js';
+import { canvasRouter } from './modules/architectures/canvas.routes.js';
 
 export const app = express();
 
@@ -29,5 +30,6 @@ app.use('/api/projects', requireAuth, projectsRouter);
 app.use('/api/architecture', requireAuth, architecturesRouter);
 app.use('/api/v1/projects', requireAuth, projectsRouter);
 app.use('/api/v1/architectures', requireAuth, architecturesRouter);
+app.use('/api/v1/architectures', requireAuth, canvasRouter);
 app.use(notFound);
 app.use(errorHandler);
