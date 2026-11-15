@@ -173,23 +173,7 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "architecture_documents_architecture_idx": {
-          "name": "architecture_documents_architecture_idx",
-          "columns": [
-            {
-              "expression": "architecture_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "architecture_documents_architecture_id_architectures_id_fk": {
           "name": "architecture_documents_architecture_id_architectures_id_fk",

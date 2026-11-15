@@ -21,6 +21,10 @@ Database schema changes are generated with `npm run db:generate` and applied wit
 - `npm run db:generate`: generate a Drizzle migration
 - `npm run db:migrate`: apply migrations
 - `npm run db:seed`: add a demo project for the first Better Auth user
+- `npm test`: run project, architecture, canvas, and canvas-store `.spec.ts` tests
+- `npm run test:types`: type-check the backend and test sources
+
+The PostgreSQL endpoint specs run only when `NODE_ENV=test`, `TEST_DATABASE_URL` points to a database other than `DATABASE_URL`, and `ATLASO_TEST_DATABASE_CONFIRMATION=I_CONFIRM_THIS_IS_AN_ISOLATED_TEST_DATABASE` is set. They apply the repository migrations to that isolated database and create test accounts through Better Auth. Do not point `TEST_DATABASE_URL` at a shared or production database.
 
 ## Authentication
 

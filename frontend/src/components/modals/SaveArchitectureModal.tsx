@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save } from '../../lib/icons';
 
 interface SaveArchitectureModalProps {
     isOpen: boolean;

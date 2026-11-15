@@ -38,3 +38,4 @@ export const providerMappingSchema = z.object({
 });
 
 export type CreateArchitecture = z.infer<typeof createArchitectureSchema>;
+export type UpdateArchitecture = z.infer<typeof updateArchitectureSchema>;

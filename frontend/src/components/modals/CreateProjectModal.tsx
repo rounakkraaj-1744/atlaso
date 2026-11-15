@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FolderPlus, X } from 'lucide-react';
+import { FolderPlus, X } from '../../lib/icons';
 
 interface CreateProjectModalProps {
   isOpen: boolean;

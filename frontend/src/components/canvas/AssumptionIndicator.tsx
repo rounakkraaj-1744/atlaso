@@ -1,5 +1,5 @@
 import type { AssumptionSource } from '../../types';
-import { Info } from 'lucide-react';
+import { Info } from '../../lib/icons';
 
 interface AssumptionIndicatorProps {
     source: AssumptionSource;

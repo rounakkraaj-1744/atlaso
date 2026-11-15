@@ -1,6 +1,6 @@
 import { scenarioPresets } from '../../features/constraints/data/scenarios';
 import type { ScenarioPreset } from '../../types';
-import { Zap, TrendingUp, AlertTriangle, Activity } from 'lucide-react';
+import { Zap, TrendingUp, AlertTriangle, Activity } from '../../lib/icons';
 
 interface ScenarioSelectorProps {
     currentScenario: ScenarioPreset | 'custom';
@@ -25,10 +25,10 @@ export function ScenarioSelector({ currentScenario, onScenarioChange }: Scenario
     return (
         <div className="space-y-3">
             <div>
-                <h3 className="text-sm font-semibold text-text-primary mb-1">
+                <h3 className="text-sm font-semibold text-slate-100 mb-1">
                     Load Scenarios
                 </h3>
-                <p className="text-xs text-text-secondary">
+                <p className="text-xs text-slate-400">
                     Quick presets for different traffic patterns
                 </p>
             </div>
@@ -42,15 +42,15 @@ export function ScenarioSelector({ currentScenario, onScenarioChange }: Scenario
                     return (
                         <button key={key} onClick={() => onScenarioChange(key)} className={`p-2 rounded-lg border transition-all ${isActive
                                 ? scenarioColors[key] + ' ring-2 ring-current'
-                                : 'bg-bg-tertiary border-border hover:border-accent-blue/50'
+                                : 'bg-slate-900 border-white/10 hover:border-blue-500/50'
                                 }`} >
                             <div className="flex items-start gap-2">
                                 <Icon className={`w-3.5 h-3.5 mt-0.5 ${isActive ? '' : 'text-slate-500'}`} />
                                 <div className="flex-1 min-w-0 text-left">
-                                    <div className={`text-xs font-semibold ${isActive ? '' : 'text-text-primary'}`}>
+                                    <div className={`text-xs font-semibold ${isActive ? '' : 'text-slate-200'}`}>
                                         {scenario.name}
                                     </div>
-                                    <div className="text-[10px] text-text-secondary mt-0.5 leading-tight">
+                                    <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">
                                         {scenario.description}
                                     </div>
                                     {isActive && (

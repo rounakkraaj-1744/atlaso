@@ -1,5 +1,5 @@
 import { Badge } from '../ui/Badge';
-import { AlertCircle, AlertTriangle, CheckCircle2, Clock, Flame } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, Clock, Flame } from '../../lib/icons';
 import type { AnalysisResult } from '../../types';
 
 interface ResultsTabProps {
@@ -58,10 +58,10 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
                     <Icon className={`w-5 h-5 ${config.color}`} />
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-semibold text-text-primary">Overall Verdict</h3>
+                            <h3 className="text-sm font-semibold text-slate-100">Overall Verdict</h3>
                             <Badge variant={analysis.verdict}>{analysis.verdict.toUpperCase()}</Badge>
                         </div>
-                        <p className="text-xs text-text-secondary mt-1">{config.message}</p>
+                        <p className="text-xs text-slate-400 mt-1">{config.message}</p>
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
                 <div>
                     <div className="flex items-center gap-2 mb-3">
                         <Flame className="w-4 h-4 text-red-400" />
-                        <h3 className="text-sm font-semibold text-text-primary">First Point of Failure</h3>
+                        <h3 className="text-sm font-semibold text-slate-100">First Point of Failure</h3>
                     </div>
                     <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30">
                         <div className="flex items-start gap-3">
@@ -88,7 +88,7 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
                                         T+{analysis.firstFailure.timeToFailure}s
                                     </span>
                                 </div>
-                                <p className="text-sm text-text-primary leading-relaxed">
+                                <p className="text-sm text-slate-100 leading-relaxed">
                                     {analysis.firstFailure.reason}
                                 </p>
                             </div>
@@ -99,12 +99,12 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
 
             {sortedBottlenecks.length > 0 && (
                 <div>
-                    <h3 className="text-sm font-semibold text-text-primary mb-3">
+                    <h3 className="text-sm font-semibold text-slate-100 mb-3">
                         Bottleneck Components ({sortedBottlenecks.length})
                     </h3>
                     <div className="space-y-2">
                         {sortedBottlenecks.map((bottleneck, idx) => (
-                            <div key={idx} className="p-3 rounded-lg bg-bg-tertiary border border-border hover:border-accent-blue/30 transition-colors" >
+                            <div key={idx} className="p-3 rounded-lg bg-slate-800/70 border border-white/10 hover:border-blue-500/30 transition-colors" >
                                 <div className="flex items-start gap-3">
                                     <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${bottleneck.severity === 'high'
                                             ? 'bg-accent-red'
@@ -114,7 +114,7 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
                                             }`} />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-sm font-semibold text-text-primary">
+                                            <span className="text-sm font-semibold text-slate-100">
                                                 {bottleneck.nodeName}
                                             </span>
                                             {bottleneck.timeToFailure && (
@@ -122,19 +122,16 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
                                                     Fails at T+{bottleneck.timeToFailure}s
                                                 </span>
                                             )}
-                                            <Badge
-                                                variant={
+                                            <Badge variant={
                                                     bottleneck.severity === 'high'
-                                                        ? 'fail'
-                                                        : bottleneck.severity === 'medium'
+                                                        ? 'fail' : bottleneck.severity === 'medium'
                                                             ? 'risky'
                                                             : 'pass'
-                                                }
-                                            >
+                                                } >
                                                 {bottleneck.severity.toUpperCase()}
                                             </Badge>
                                         </div>
-                                        <p className="text-sm text-text-primary leading-relaxed">
+                                        <p className="text-sm text-slate-100 leading-relaxed">
                                             {bottleneck.reason}
                                         </p>
                                     </div>
@@ -147,15 +144,12 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
 
             {analysis.warnings.length > 0 && (
                 <div>
-                    <h3 className="text-sm font-semibold text-text-primary mb-3">
+                    <h3 className="text-sm font-semibold text-slate-100 mb-3">
                         System Warnings ({analysis.warnings.length})
                     </h3>
                     <div className="space-y-2">
                         {analysis.warnings.map((warning, idx) => (
-                            <div
-                                key={idx}
-                                className="p-3 rounded-lg bg-accent-yellow/10 border border-accent-yellow/30"
-                            >
+                            <div key={idx} className="p-3 rounded-lg bg-accent-yellow/10 border border-accent-yellow/30" >
                                 <div className="flex items-start gap-2">
                                     <AlertTriangle className="w-4 h-4 text-accent-yellow mt-0.5 shrink-0" />
                                     <div className="flex-1 min-w-0">
@@ -164,7 +158,7 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
                                                 T+{warning.timeToFailure}s
                                             </div>
                                         )}
-                                        <p className="text-sm text-text-primary leading-relaxed">{warning.message}</p>
+                                        <p className="text-sm text-slate-100 leading-relaxed">{warning.message}</p>
                                     </div>
                                 </div>
                             </div>
@@ -181,7 +175,7 @@ export function ResultsTab({ analysis }: ResultsTabProps) {
                             <p className="text-xs text-blue-300 font-semibold mb-1">
                                 Analysis relies on {analysis.assumptions.length} default assumptions
                             </p>
-                            <p className="text-xs text-text-secondary">
+                            <p className="text-xs text-slate-400">
                                 Review the Assumptions tab to verify capacity estimates match your infrastructure.
                             </p>
                         </div>

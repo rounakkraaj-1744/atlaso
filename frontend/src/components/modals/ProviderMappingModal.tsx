@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Layers3, Search, X } from 'lucide-react';
+import { ChevronDown, Layers3, Search, X } from '../../lib/icons';
 import { cn } from '../../lib/cn';
 import { api } from '../../lib/api';
 import { useArchitectureStore } from '../../features/architecture/store';
@@ -44,6 +44,7 @@ const modeOptions: Array<{
 export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDropdownProps) {
   const [provider, setProvider] = useState<ProviderOption>('AWS');
   const [isProviderOpen, setIsProviderOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [applyMode, setApplyMode] = useState<ApplyMode>('keep-manual');
   const activeArchitectureId = useArchitectureStore((state) => state.activeArchitectureId);
   const setActiveArchitecture = useArchitectureStore((state) => state.setActiveArchitecture);
@@ -64,6 +65,22 @@ export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDrop
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isProviderOpen) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !dropdownRef.current?.contains(event.target)) setIsProviderOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsProviderOpen(false);
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isProviderOpen]);
 
   const content = useMemo(() => {
     const applyMapping = async () => {
@@ -112,7 +129,7 @@ export function ProviderMappingDropdown({ isOpen, onClose }: ProviderMappingDrop
         </div>
 
         <div className="space-y-5 px-6 py-5">
-          <div className="space-y-2 relative">
+          <div ref={dropdownRef} className="space-y-2 relative">
             <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Provider</label>
             <button 
               onClick={() => setIsProviderOpen(!isProviderOpen)}

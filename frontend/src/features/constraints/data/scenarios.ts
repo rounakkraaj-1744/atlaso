@@ -59,4 +59,13 @@ export const scenarioPresets: Record<string, ScenarioDefinition> = {
     },
 };
 
-export const defaultConstraints: SystemConstraints = scenarioPresets.normal.constraints;
+export const defaultConstraints: SystemConstraints = {
+    avgRPS: 0,
+    peakRPS: 0,
+    readWriteRatio: 0,
+    payloadSize: 0,
+    slaLatency: 0,
+    retryAttempts: 0,
+    rateLimitRPS: 0,
+    consumerLagTolerance: 0,
+};

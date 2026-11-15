@@ -4,9 +4,10 @@ import { z } from 'zod';
 import { db } from '../../infrastructure/database/client.js';
 import { architectures, projects } from '../../infrastructure/database/schema.js';
 import { createArchitectureSchema, providerMappingSchema, updateArchitectureSchema } from './architecture.schemas.js';
-import { createCanvasDocument, toCanvasDocument } from './architecture.repository.js';
+import { createCanvasDocument, patchOwnedArchitecture, toCanvasDocument } from './architecture.repository.js';
 import { CanvasServiceError, getCanvas, putCanvas } from './canvas.service.js';
 import type { CanvasDocument } from './canvas.schemas.js';
+import { paginationSchema } from '../projects/projects.schemas.js';
 
 export const architecturesRouter = Router();
 architecturesRouter.param('id', (_req, res, next, value) => {
@@ -36,9 +37,7 @@ async function ownedArchitecture(id: string, userId: string) {
 }
 
 architecturesRouter.get('/', async (req, res) => {
-  const page = Math.max(1, Number.parseInt(String(req.query.page ?? '1'), 10) || 1);
-
-  const limit = Math.min(100, Math.max(1, Number.parseInt(String(req.query.limit ?? '20'), 10) || 20));
+  const { page, limit } = paginationSchema.parse(req.query);
 
   const rows = await db.select({ architecture: architectures })
     .from(architectures)
@@ -103,18 +102,13 @@ architecturesRouter.patch('/:id', async (req, res) => {
     return res.status(409).json({ success: false, message: 'Architecture changed since it was loaded', data: { currentVersion: current.version }, timestamp: stamp() });
 
   const { expectedVersion: _expectedVersion, ...changes } = input;
-
-  const [row] = await db.update(architectures).set({ ...changes, version: current.version + 1, updatedAt: new Date() })
-    .where(and(eq(architectures.id, current.id), eq(architectures.version, current.version))).returning();
-
-  if (!row)
-    return res.status(409).json({ success: false, message: 'Architecture changed during save; reload and try again', timestamp: stamp() });
-
-  await db.update(projects).set({ updatedAt: new Date() }).where(eq(projects.id, row.projectId));
+  const result = await patchOwnedArchitecture(current.id, req.userId!, current.version, changes);
+  if (result.kind === 'not-found') return res.status(404).json({ success: false, message: 'Architecture not found', timestamp: stamp() });
+  if (result.kind === 'conflict') return res.status(409).json({ success: false, message: 'Architecture changed during save; reload and try again', data: { currentVersion: 'currentVersion' in result ? result.currentVersion : current.version }, timestamp: stamp() });
 
   res.json({
     success: true,
-    data: dto(row),
+    data: dto(result.architecture),
     message: 'Architecture updated successfully',
     timestamp: stamp()
   });

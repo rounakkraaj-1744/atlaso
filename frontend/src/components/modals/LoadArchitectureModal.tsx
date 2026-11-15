@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Folder, Trash2, Clock, GitBranch } from 'lucide-react';
+import { X, Folder, Trash2, Clock, GitBranch } from '../../lib/icons';
 import { useArchitectures, useDeleteArchitecture } from '../../features/architecture/hooks/useArchitectures';
 import type { Architecture } from '../../lib/api';
 

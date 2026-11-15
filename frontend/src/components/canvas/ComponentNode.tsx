@@ -4,7 +4,7 @@ import type { CanvasNode } from '../../types';
 import { ComponentIconRenderer } from './ComponentIconRenderer';
 import { NodeDetailPopover } from './NodeDetailPopover';
 import { componentRegistry } from '../../features/registry/data/components';
-import { AlertTriangle, CheckCircle2, Copy, FileText, Layers3, MoreVertical, PencilLine, Trash2, X, XCircle, ArrowRight } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Copy, FileText, Layers3, MoreVertical, PencilLine, Trash2, X, XCircle, ArrowRight } from '../../lib/icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '../../lib/cn';
 

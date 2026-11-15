@@ -1,5 +1,5 @@
 import type { AnalysisResult } from '../../types';
-import { Info, AlertTriangle } from 'lucide-react';
+import { Info, AlertTriangle } from '../../lib/icons';
 import { AssumptionIndicator } from '../canvas/AssumptionIndicator';
 
 interface AssumptionsTabProps {
@@ -28,17 +28,17 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
 
         return (
             <div>
-                <h3 className="text-sm font-semibold text-text-primary mb-3">
+                <h3 className="text-sm font-semibold text-slate-100 mb-3">
                     {title} ({assumptions.length})
                 </h3>
                 <div className="space-y-2">
                     {assumptions.map((assumption, idx) => (
-                        <div key={idx} className="p-3 rounded-lg bg-bg-tertiary border border-border">
+                        <div key={idx} className="p-3 rounded-lg bg-slate-800/70 border border-white/10">
                             <div className="flex items-start gap-3">
                                 <AssumptionIndicator source={assumption.source} explanation={assumption.explanation} value={assumption.value} field={assumption.field}/>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-sm font-semibold text-text-primary">
+                                        <span className="text-sm font-semibold text-slate-100">
                                             {assumption.nodeName}
                                         </span>
                                         <span className="text-xs text-slate-500">
@@ -46,11 +46,9 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
                                         </span>
                                     </div>
                                     <div className="text-xs font-mono text-slate-400 mb-2">
-                                        Value: {typeof assumption.value === 'number'
-                                            ? assumption.value.toLocaleString()
-                                            : assumption.value}
+                                        Value: {typeof assumption.value === 'number' ? assumption.value.toLocaleString() : assumption.value}
                                     </div>
-                                    <p className="text-xs text-text-secondary leading-relaxed">
+                                    <p className="text-xs text-slate-400 leading-relaxed">
                                         {assumption.explanation}
                                     </p>
                                 </div>
@@ -71,7 +69,7 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
                         <p className="text-xs text-blue-300 font-semibold mb-1">
                             Assumptions Impact Analysis Accuracy
                         </p>
-                        <p className="text-xs text-text-secondary leading-relaxed">
+                        <p className="text-xs text-slate-400 leading-relaxed">
                             Default values are estimates. Verify these match your actual infrastructure
                             configuration for accurate analysis. Click [D] badges for explanations.
                         </p>
@@ -91,7 +89,7 @@ export function AssumptionsTab({ analysis }: AssumptionsTabProps) {
                             <p className="text-xs text-orange-300 font-semibold mb-1">
                                 {highImpact.length} High-Impact Assumptions Detected
                             </p>
-                            <p className="text-xs text-text-secondary">
+                            <p className="text-xs text-slate-400">
                                 These assumptions significantly affect analysis conclusions.
                                 Consider providing actual values for more accurate results.
                             </p>

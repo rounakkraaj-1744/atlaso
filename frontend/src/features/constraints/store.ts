@@ -10,14 +10,14 @@ interface ConstraintsState {
 }
 
 const defaultConstraints: SystemConstraints = {
-    avgRPS: 1000,
-    peakRPS: 2000,
-    readWriteRatio: 80,
-    payloadSize: 10,
-    slaLatency: 200,
-    retryAttempts: 3,
-    rateLimitRPS: 10000,
-    consumerLagTolerance: 5000,
+    avgRPS: 0,
+    peakRPS: 0,
+    readWriteRatio: 0,
+    payloadSize: 0,
+    slaLatency: 0,
+    retryAttempts: 0,
+    rateLimitRPS: 0,
+    consumerLagTolerance: 0,
 };
 
 export const useConstraintsStore = create<ConstraintsState>((set) => ({

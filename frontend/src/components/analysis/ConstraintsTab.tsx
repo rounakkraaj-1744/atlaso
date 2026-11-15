@@ -10,7 +10,7 @@ interface ConstraintsTabProps {
 }
 
 export function ConstraintsTab({ constraints, onConstraintsChange }: ConstraintsTabProps) {
-    const [currentScenario, setCurrentScenario] = useState<ScenarioPreset | 'custom'>('normal');
+    const [currentScenario, setCurrentScenario] = useState<ScenarioPreset | 'custom'>('custom');
 
     const handleScenarioChange = (scenario: ScenarioPreset) => {
         setCurrentScenario(scenario);
@@ -28,10 +28,10 @@ export function ConstraintsTab({ constraints, onConstraintsChange }: Constraints
 
             <div className="border-t border-border pt-4">
                 <div>
-                    <h3 className="text-xs font-semibold text-text-primary mb-1">
+                    <h3 className="text-xs font-semibold text-slate-100 mb-1">
                         System Constraints
                     </h3>
-                    <p className="text-[10px] text-text-secondary">
+                    <p className="text-[10px] text-slate-400">
                         Define expected load and performance requirements
                     </p>
                 </div>
@@ -41,14 +41,14 @@ export function ConstraintsTab({ constraints, onConstraintsChange }: Constraints
                     <Input label="Peak RPS" type="number" value={constraints.peakRPS} onChange={(e) => handleConstraintUpdate({ peakRPS: Number(e.target.value) })} unit="rps"/>
 
                     <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-text-primary">
+                        <label className="text-sm font-medium text-slate-200">
                             Read/Write Ratio
                         </label>
                         <div className="flex items-center gap-3">
                             <input type="range" min="0" max="100" value={constraints.readWriteRatio} onChange={(e) =>
                                     handleConstraintUpdate({ readWriteRatio: Number(e.target.value) })
-                                } className="flex-1 h-2 bg-bg-tertiary rounded-lg appearance-none cursor-pointer accent-accent-blue"/>
-                            <span className="text-sm font-mono text-text-primary w-16 text-right">
+                                } className="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"/>
+                            <span className="text-sm font-mono text-slate-200 w-16 text-right">
                                 {constraints.readWriteRatio}% R
                             </span>
                         </div>

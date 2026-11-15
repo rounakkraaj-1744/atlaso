@@ -1,5 +1,5 @@
 import type { CanvasNode } from '../../types';
-import { X, Settings } from 'lucide-react';
+import { X, Settings } from '../../lib/icons';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 

@@ -18,7 +18,7 @@ interface RightPanelProps {
   onOpenReplaceTechnology?: (node: CanvasNode) => void;
 }
 
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '../../lib/icons';
 import { ComponentIconRenderer } from '../canvas/ComponentIconRenderer';
 import { componentRegistry } from '../../features/registry/data/components';
 
@@ -72,15 +72,12 @@ export function RightPanel({
   const renderTabs = () => (
     <div className="flex border-b border-white/5 overflow-x-auto no-scrollbar shrink-0 px-2 mt-2">
       {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
+        <button key={tab.id} onClick={() => setActiveTab(tab.id)}
           className={`px-3 py-2.5 text-xs font-medium transition-all relative whitespace-nowrap ${
             activeTab === tab.id
               ? 'text-white'
               : 'text-slate-500 hover:text-slate-300 hover:bg-white/5 rounded-md'
-          }`}
-        >
+          }`} >
           {tab.label}
           {activeTab === tab.id && (
             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-t-full" />
@@ -119,7 +116,7 @@ export function RightPanel({
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400">Memory</span>
             <div className="flex items-center gap-2">
-              <input type="text" value="8" readOnly className="w-16 bg-transparent border-b border-white/10 text-xs text-white text-right focus:outline-none" />
+              <span className="text-xs text-slate-500">—</span>
               <span className="text-xs text-slate-500">GB</span>
             </div>
           </div>
@@ -174,7 +171,7 @@ export function RightPanel({
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400">Average Latency</span>
             <div className="flex items-center gap-2">
-              <input type="text" value="1 - 2" readOnly className="w-16 bg-transparent border-b border-white/10 text-xs text-white text-right focus:outline-none font-mono" />
+              <span className="text-xs text-slate-500">—</span>
               <span className="text-xs text-slate-500">ms</span>
             </div>
           </div>
@@ -189,30 +186,30 @@ export function RightPanel({
               <div>
                 <div className="flex justify-between text-[10px] mb-1.5">
                   <span className="text-slate-400">Memory Usage</span>
-                  <span className="text-slate-200">62%</span>
+                  <span className="text-slate-500">—</span>
                 </div>
                 <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 rounded-full" style={{ width: '62%' }} />
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: '0%' }} />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-[10px] mb-1.5">
                   <span className="text-slate-400">Hit Ratio</span>
-                  <span className="text-slate-200">95%</span>
+                  <span className="text-slate-500">—</span>
                 </div>
                 <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: '95%' }} />
+                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: '0%' }} />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-[10px] mb-1.5">
                   <span className="text-slate-400">Connections</span>
-                  <span className="text-slate-200">12,420 / 20,000</span>
+                  <span className="text-slate-500">—</span>
                 </div>
                 <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-purple-500 rounded-full" style={{ width: '62%' }} />
+                  <div className="h-full bg-purple-500 rounded-full" style={{ width: '0%' }} />
                 </div>
               </div>
             </div>
@@ -228,7 +225,7 @@ export function RightPanel({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-[10px] uppercase tracking-wider text-slate-500">Technology</div>
-                  <div className="mt-1 text-sm text-slate-200">{selectedNode.providerMapping?.technology || 'Supabase Auth'}</div>
+                  <div className="mt-1 text-sm text-slate-200">{selectedNode.providerMapping?.technology || 'Not mapped'}</div>
                 </div>
                 <button
                   onClick={() => onOpenReplaceTechnology?.(selectedNode)}
@@ -240,22 +237,19 @@ export function RightPanel({
 
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-500">Current Provider</div>
-                <div className="mt-1 text-sm text-slate-200">{selectedNode.providerMapping?.provider || 'Supabase'}</div>
+                <div className="mt-1 text-sm text-slate-200">{selectedNode.providerMapping?.provider || 'Not mapped'}</div>
               </div>
 
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.7)]" />
                 <div>
                   <div className="text-[10px] uppercase tracking-wider text-slate-500">Mapping Status</div>
-                  <div className="mt-1 text-sm text-emerald-400">{selectedNode.providerMapping?.mappingStatus === 'manual' ? 'Manual Selection' : 'Custom Selection'}</div>
+                  <div className="mt-1 text-sm text-emerald-400">{selectedNode.providerMapping?.mappingStatus === 'manual' ? 'Manual Selection' : selectedNode.providerMapping?.mappingStatus ? 'Custom Selection' : 'Not mapped'}</div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 pt-1">
-                <button
-                  onClick={() => onOpenReplaceTechnology?.(selectedNode)}
-                  className="flex-1 rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/5"
-                >
+                <button onClick={() => onOpenReplaceTechnology?.(selectedNode)} className="flex-1 rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/5" >
                   Replace Technology
                 </button>
                 <button className="flex-1 rounded-lg border border-white/10 bg-white/3 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/5">

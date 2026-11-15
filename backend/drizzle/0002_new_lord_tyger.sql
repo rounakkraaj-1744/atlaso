@@ -8,5 +8,4 @@ CREATE TABLE "architecture_documents" (
 	CONSTRAINT "architecture_documents_architecture_id_unique" UNIQUE("architecture_id")
 );
 --> statement-breakpoint
-ALTER TABLE "architecture_documents" ADD CONSTRAINT "architecture_documents_architecture_id_architectures_id_fk" FOREIGN KEY ("architecture_id") REFERENCES "public"."architectures"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "architecture_documents_architecture_idx" ON "architecture_documents" USING btree ("architecture_id");
+ALTER TABLE "architecture_documents" ADD CONSTRAINT "architecture_documents_architecture_id_architectures_id_fk" FOREIGN KEY ("architecture_id") REFERENCES "public"."architectures"("id") ON DELETE cascade ON UPDATE no action;

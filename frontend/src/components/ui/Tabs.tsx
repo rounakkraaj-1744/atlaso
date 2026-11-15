@@ -28,8 +28,8 @@ export function Tabs({ tabs, defaultTab }: TabsProps) {
                         className={cn(
                             'px-4 py-3 text-sm font-medium transition-colors relative',
                             activeTab === tab.id
-                                ? 'text-text-primary'
-                                : 'text-text-secondary hover:text-text-primary'
+                                ? 'text-slate-100'
+                                : 'text-slate-400 hover:text-slate-100'
                         )}
                     >
                         {tab.label}

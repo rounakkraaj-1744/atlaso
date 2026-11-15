@@ -3,7 +3,7 @@ import {
   Monitor, Smartphone, Tablet,
   Shield, Key, BrainCircuit, Bot, Globe, Mail, MessageSquare, CreditCard,
   TerminalSquare, Layers, Lock, Clock, Zap, Search, Fingerprint, LineChart, FileText
-} from 'lucide-react';
+} from '../../lib/icons';
 import type { Vendor } from '../../types/registry';
 
 interface ComponentIconRendererProps {

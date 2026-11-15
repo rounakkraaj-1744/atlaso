@@ -28,17 +28,12 @@ export const BaseNode = memo(({ data, selected }: NodeProps<Node<BaseNodeData>>)
     return (
         <div
             className={cn(
-                'px-4 py-3 rounded-lg border-2 bg-bg-secondary min-w-[180px]',
+                'px-4 py-3 rounded-lg border-2 bg-bg-secondary min-w-45',
                 'transition-all duration-200',
                 statusColors[data.status],
                 selected && 'ring-2 ring-accent-blue ring-offset-2 ring-offset-bg-primary'
-            )}
-        >
-            <Handle
-                type="target"
-                position={Position.Left}
-                className="w-3 h-3 !bg-accent-blue border-2 border-bg-primary"
-            />
+            )} >
+            <Handle type="target" position={Position.Left} className="w-3 h-3 bg-accent-blue! border-2 border-bg-primary" />
 
             <div className="flex items-start gap-2">
                 <div className={cn('w-2 h-2 rounded-full mt-1.5', statusIndicators[data.status])} />
@@ -63,11 +58,7 @@ export const BaseNode = memo(({ data, selected }: NodeProps<Node<BaseNodeData>>)
                 </div>
             </div>
 
-            <Handle
-                type="source"
-                position={Position.Right}
-                className="w-3 h-3 !bg-accent-blue border-2 border-bg-primary"
-            />
+            <Handle type="source" position={Position.Right} className="w-3 h-3 bg-accent-blue! border-2 border-bg-primary" />
         </div>
     );
 });

@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronRight, LayoutGrid } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight, LayoutGrid } from '../../lib/icons';
 import { useDrag } from 'react-dnd';
 import { componentRegistry, domainNames } from '../../features/registry/data/components';
 import type { Domain, ComponentRegistryItem } from '../../types/registry';
 import { ComponentIconRenderer } from '../canvas/ComponentIconRenderer';
 
-export function ComponentRegistryPanel() {
+export function ComponentRegistryPanel({ collapsed = false, onToggleCollapse }: { collapsed?: boolean; onToggleCollapse?: () => void }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedDomains, setExpandedDomains] = useState<Set<Domain>>(
     new Set(['client', 'compute', 'networking'])
@@ -91,10 +91,11 @@ export function ComponentRegistryPanel() {
     <div className="h-full bg-[#09090b]/95 border-r border-white/5 flex flex-col font-sans">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 shrink-0 bg-white/1">
         <LayoutGrid className="w-4 h-4 text-slate-400" />
-        <span className="text-xs font-semibold text-slate-200">Primitives</span>
+        {!collapsed && <span className="text-xs font-semibold text-slate-200">Primitives</span>}
+        <button type="button" onClick={onToggleCollapse} aria-label={collapsed ? 'Expand primitives sidebar' : 'Collapse primitives sidebar'} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} className="ml-auto rounded p-1 text-slate-400 hover:bg-white/5 hover:text-white"><ChevronRight className={`h-4 w-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} /></button>
       </div>
 
-      <div className="p-3 border-b border-white/5 shrink-0 bg-[#09090b]/95 backdrop-blur-xl z-10 sticky top-0">
+      {!collapsed && <><div className="p-3 border-b border-white/5 shrink-0 bg-[#09090b]/95 backdrop-blur-xl z-10 sticky top-0">
         <div className="relative group">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
           <input type="text" placeholder="Search primitives..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-8 pr-3 py-1.5 bg-black/40 border border-white/10 rounded-md text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all" />
@@ -116,6 +117,7 @@ export function ComponentRegistryPanel() {
           </div>
         )}
       </div>
+      </>}
     </div>
   );
 }

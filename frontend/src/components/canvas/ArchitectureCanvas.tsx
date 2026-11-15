@@ -3,7 +3,7 @@ import { useDrop } from 'react-dnd';
 import { ComponentNode } from './ComponentNode';
 import type { CanvasNode, ComponentType, Connection } from '../../types';
 import { componentRegistry } from '../../features/registry/data/components';
-import { ZoomIn, ZoomOut, Maximize2, MousePointer2, Hand, MessageSquare, Square, Minus } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, MousePointer2, Hand, MessageSquare, Square, Minus } from '../../lib/icons';
 
 type CanvasTool = 'select' | 'hand' | 'comment' | 'rectangle' | 'line';
 
@@ -83,11 +83,6 @@ export function Canvas({
     const [connectionSource, setConnectionSource] = useState<string | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-    useEffect(() => {
-        setPan({ x: initialViewport?.x ?? 0, y: initialViewport?.y ?? 0 });
-        setScale(initialViewport?.zoom ?? 1);
-    }, [initialViewport?.x, initialViewport?.y, initialViewport?.zoom]);
 
     useEffect(() => {
         onViewportChange?.({ x: pan.x, y: pan.y, zoom: scale });

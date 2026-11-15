@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import { ChevronDown, Layers3, Play, Download, Moon, Command, Undo2, Redo2, Loader2, Upload, Save, FolderOpen, FolderPlus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, Layers3, Play, Save, FolderOpen, FolderPlus, Undo2, Redo2, Download, Upload, Moon, Check } from '../../lib/icons';
 import type { CanvasNode } from '../../types';
 import { ProviderMappingDropdown } from '../modals/ProviderMappingModal';
-import type { AuthUser } from '../../lib/api';
-import type { Project } from '../../lib/api';
+import type { AuthUser, Project } from '../../lib/api';
 
 interface TopNavigationProps {
   nodes: CanvasNode[];
@@ -23,156 +22,143 @@ interface TopNavigationProps {
   onNewProject?: () => void;
   onSave?: () => void;
   onLoad?: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  onExport?: () => void;
+  onShare?: () => void;
 }
 
-export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeftPanelOpen, isRightPanelOpen, setIsRightPanelOpen, projectName = "Untitled Architecture", architectureName = 'Untitled Architecture', isSimulating = false, user, onSignOut, projects = [], activeProjectId = '', onProjectChange, onNewProject, onSave, onLoad }: TopNavigationProps) {
+type MenuName = 'file' | 'insert';
+
+const menuButton = 'flex h-8 items-center gap-1 rounded-md px-2.5 text-[13px] text-slate-300 transition-colors hover:bg-white/[.08] hover:text-white';
+const menuItem = 'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-xs text-slate-200 transition-colors hover:bg-white/[.08] disabled:cursor-not-allowed disabled:opacity-40';
+
+export function TopNavigation({ nodes, onRunAnalysis, isLeftPanelOpen, setIsLeftPanelOpen, isRightPanelOpen, setIsRightPanelOpen, projectName = 'Untitled Project', architectureName = 'Untitled Architecture', isSimulating = false, user, onSignOut, projects = [], activeProjectId = '', onProjectChange, onNewProject, onSave, onLoad, onUndo, onRedo, onExport, onShare }: TopNavigationProps) {
   void isLeftPanelOpen;
   void setIsLeftPanelOpen;
   void isRightPanelOpen;
   void setIsRightPanelOpen;
-  const [activeProfile, setActiveProfile] = useState('AWS');
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [openMenu, setOpenMenu] = useState<MenuName | null>(null);
   const [showProviderDropdown, setShowProviderDropdown] = useState(false);
+  const [showProjects, setShowProjects] = useState(false);
+  const [isMac, setIsMac] = useState(false);
+  const rootRef = useRef<HTMLElement>(null);
+  const toggleMenu = (name: MenuName) => setOpenMenu(current => current === name ? null : name);
+  const shortcut = (mac: string, windows: string) => isMac ? mac : windows;
 
-  const profiles = ['Generic', 'AWS', 'Azure', 'Google Cloud', 'Cloudflare', 'Civo'];
+  useEffect(() => {
+    setIsMac(/Mac|iPhone|iPad|iPod/i.test(navigator.platform));
+  }, []);
+
+  useEffect(() => {
+    const onShortcut = (event: KeyboardEvent) => {
+      const modifier = isMac ? event.metaKey : event.ctrlKey;
+      if (!modifier || event.altKey) return;
+      const target = event.target;
+      const isTyping = target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+      if (isTyping && event.key.toLowerCase() !== 's') return;
+      const key = event.key.toLowerCase();
+      const handlers: Record<string, (() => void) | undefined> = {
+        s: onSave,
+        o: onLoad,
+        n: onNewProject,
+        e: onExport,
+        z: event.shiftKey ? onRedo : onUndo,
+        y: onRedo,
+      };
+      const handler = event.shiftKey && key === 'u' ? onShare : key === 'Enter' ? onRunAnalysis : handlers[key];
+      if (handler) {
+        event.preventDefault();
+        handler();
+      }
+    };
+    document.addEventListener('keydown', onShortcut);
+    return () => document.removeEventListener('keydown', onShortcut);
+  }, [isMac, onSave, onLoad, onNewProject, onExport, onUndo, onRedo, onRunAnalysis, onShare]);
+
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) {
+        setOpenMenu(null);
+        setShowProjects(false);
+        setShowProviderDropdown(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpenMenu(null);
+        setShowProjects(false);
+        setShowProviderDropdown(false);
+      }
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, []);
+
+  const renderMenu = (name: MenuName, label: string, content: React.ReactNode) => (
+    <div className="relative">
+      <button type="button" className={`${menuButton} ${openMenu === name ? 'bg-white/[.08] text-white' : ''}`} aria-expanded={openMenu === name} onClick={() => toggleMenu(name)}>
+        {label}<ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+      </button>
+      {openMenu === name && <div className="absolute left-0 top-[calc(100%+7px)] z-50 w-56 rounded-lg border border-white/10 bg-[#11151d] p-1.5 shadow-2xl" onClick={() => setOpenMenu(null)}>{content}</div>}
+    </div>
+  );
 
   return (
-    <header className="h-14 bg-[#09090b]/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 shrink-0 z-40 relative">
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2 cursor-pointer">
-          <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center">
-            <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <span className="text-sm font-semibold text-white tracking-tight">Atlaso</span>
+    <header ref={rootRef} className="relative z-40 flex h-14 shrink-0 items-center border-b border-white/[.07] bg-[#090c12]/95 px-3 backdrop-blur-xl md:px-5">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-blue-600 text-base text-white">ϟ</span>
+          <span className="hidden text-sm font-semibold tracking-tight text-white sm:inline">Atlaso</span>
         </div>
-
-        <div className="w-px h-4 bg-white/10 hidden md:block"></div>
-
-        <div className="hidden md:flex items-center gap-2 text-sm text-slate-300">
-          {projects.length > 0 ? <select aria-label="Open project" value={activeProjectId} onChange={(event) => onProjectChange?.(event.target.value)} className="max-w-44 bg-transparent text-sm text-slate-200 outline-none"><option value="" disabled>Select project</option>{projects.map((project) => <option className="bg-slate-900" key={project.id} value={project.id}>{project.name}</option>)}</select> : <span>{projectName}</span>}
-          <span className="text-slate-600">/</span><span className="max-w-40 truncate">{architectureName}</span>
+        <div className="hidden h-5 w-px bg-white/10 sm:block" />
+        <div className="hidden min-w-0 items-center gap-1.5 text-xs text-slate-400 sm:flex">
+          {projects.length > 0 ? <div className="relative"><button type="button" aria-label="Select project" aria-expanded={showProjects} onClick={() => setShowProjects(value => !value)} className="flex max-w-36 items-center gap-1 truncate rounded-md px-2 py-1 text-xs text-slate-300 transition-colors hover:bg-white/[.06]">{projects.find(project => project.id === activeProjectId)?.name ?? 'Select project'}<ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-500" /></button>{showProjects && <div className="absolute left-0 top-[calc(100%+8px)] z-50 max-h-72 w-56 overflow-y-auto rounded-lg border border-white/10 bg-[#11151d] p-1.5 shadow-2xl">{projects.map(project => <button key={project.id} type="button" onClick={() => { onProjectChange?.(project.id); setShowProjects(false); }} className="flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-xs text-slate-200 transition-colors hover:bg-white/[.08]"><span className="truncate">{project.name}</span>{project.id === activeProjectId && <Check className="h-3.5 w-3.5 shrink-0 text-blue-400" />}</button>)}</div>}</div> : <span className="max-w-28 truncate">{projectName}</span>}
+          <span className="text-slate-600">/</span><span className="max-w-40 truncate text-slate-200">{architectureName}</span>
         </div>
       </div>
 
-      <div className="hidden md:flex items-center justify-center flex-1 max-w-md px-4">
-        <button className="flex items-center justify-between w-full h-8 px-3 text-xs text-slate-400 bg-white/5 border border-white/10 rounded-md hover:bg-white/10 hover:text-slate-300 transition-all">
-          <span className="flex items-center gap-2">
-            <Command className="w-3.5 h-3.5" />
-            Search or run command...
-          </span>
-          <div className="flex items-center gap-1 font-mono text-[10px] opacity-70">
-            <kbd className="px-1.5 py-0.5 bg-black/20 rounded">⌘</kbd>
-            <kbd className="px-1.5 py-0.5 bg-black/20 rounded">K</kbd>
-          </div>
-        </button>
-      </div>
+      <nav className="ml-3 flex items-center gap-0.5 sm:ml-6" aria-label="Architecture menu">
+        {renderMenu('file', 'File', <>
+          <button type="button" className={menuItem} onClick={onNewProject}><FolderPlus className="h-4 w-4 text-slate-400" />New project<kbd className="ml-auto text-[10px] text-slate-500">{shortcut('⌘N', 'Ctrl+N')}</kbd></button>
+          <button type="button" className={menuItem} onClick={onLoad}><FolderOpen className="h-4 w-4 text-slate-400" />Open architecture…<kbd className="ml-auto text-[10px] text-slate-500">{shortcut('⌘O', 'Ctrl+O')}</kbd></button>
+          <div className="my-1 border-t border-white/[.08]" />
+          <button type="button" className={menuItem} onClick={onSave}><Save className="h-4 w-4 text-slate-400" />Save architecture<kbd className="ml-auto text-[10px] text-slate-500">{shortcut('⌘S', 'Ctrl+S')}</kbd></button>
+          <button type="button" className={menuItem} onClick={onExport}><Download className="h-4 w-4 text-slate-400" />Export<kbd className="ml-auto text-[10px] text-slate-500">{shortcut('⌘E', 'Ctrl+E')}</kbd></button>
+          <button type="button" className={menuItem} onClick={onShare}><Upload className="h-4 w-4 text-slate-400" />Share<kbd className="ml-auto text-[10px] text-slate-500">{shortcut('⇧⌘U', 'Ctrl+Shift+U')}</kbd></button>
+          <div className="my-1 border-t border-white/[.08]" />
+          <button type="button" className={menuItem} onClick={onUndo}><Undo2 className="h-4 w-4 text-slate-400" />Undo<kbd className="ml-auto text-[10px] text-slate-500">{shortcut('⌘Z', 'Ctrl+Z')}</kbd></button>
+          <button type="button" className={menuItem} onClick={onRedo}><Redo2 className="h-4 w-4 text-slate-400" />Redo<kbd className="ml-auto text-[10px] text-slate-500">{shortcut('⇧⌘Z', 'Ctrl+Shift+Z')}</kbd></button>
+          <button type="button" className={`${menuItem} sm:hidden`} disabled={nodes.length === 0 || isSimulating} onClick={onRunAnalysis}><Play className="h-4 w-4 text-blue-400" />{isSimulating ? 'Simulating…' : 'Simulate'}<kbd className="ml-auto text-[10px] text-slate-500">{shortcut('⌘↵', 'Ctrl+↵')}</kbd></button>
+        </>)}
+        {renderMenu('insert', 'Insert', <>
+          <button type="button" className={menuItem} onClick={() => { setIsLeftPanelOpen(!isLeftPanelOpen); setOpenMenu(null); }}>Components</button>
+          <button type="button" className={menuItem} onClick={() => { setIsRightPanelOpen(!isRightPanelOpen); setOpenMenu(null); }}>Analysis panel</button>
+        </>)}
+      </nav>
 
-      <div className="hidden xl:flex items-center gap-2 mr-3">
-        <div className="relative">
-          <button
-            onClick={() => setShowProfileMenu((v) => !v)}
-            className="flex items-center gap-2 rounded-md border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-slate-300 transition-colors hover:bg-white/5"
-          >
-            <span className="text-slate-500">Active Profile</span>
-            <span className="font-medium text-slate-100">{activeProfile}</span>
-            <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
-          </button>
-          {showProfileMenu && (
-            <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-56 overflow-hidden rounded-xl border border-white/10 bg-[#0b0f16]/95 shadow-2xl backdrop-blur-2xl">
-              {profiles.map((profile) => (
-                <button
-                  key={profile}
-                  onClick={() => {
-                    setActiveProfile(profile);
-                    setShowProfileMenu(false);
-                  }}
-                  className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-xs transition-colors hover:bg-white/5 ${
-                    activeProfile === profile ? 'text-white' : 'text-slate-300'
-                  }`}
-                >
-                  <span>{profile}</span>
-                  {activeProfile === profile && <span className="h-2 w-2 rounded-full bg-blue-500" />}
-                </button>
-              ))}
-            </div>
-          )}
+      <div className="ml-auto flex shrink-0 items-center gap-2">
+        <div className="hidden items-center gap-1 sm:flex">
+          <button type="button" onClick={onUndo} title={`Undo (${shortcut('⌘Z', 'Ctrl+Z')})`} aria-label="Undo" className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/[.08] hover:text-white"><Undo2 className="h-4 w-4" /></button>
+          <button type="button" onClick={onRedo} title={`Redo (${shortcut('⇧⌘Z', 'Ctrl+Shift+Z')})`} aria-label="Redo" className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/[.08] hover:text-white"><Redo2 className="h-4 w-4" /></button>
         </div>
-
-        <div className="relative">
-          <button onClick={() => setShowProviderDropdown((v) => !v)} className="inline-flex items-center gap-2 rounded-md border border-blue-500/40 bg-transparent px-3 py-1.5 text-xs font-medium text-slate-200 transition-all hover:bg-blue-500/10 hover:text-white">
-            <Layers3 className="h-3.5 w-3.5 text-blue-400" />
-            Apply Provider Mapping
-            <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+        <button type="button" disabled={nodes.length === 0 || isSimulating} onClick={onRunAnalysis} title={`Simulate (${shortcut('⌘Enter', 'Ctrl+Enter')})`} className="inline-flex h-8 items-center gap-2 rounded-md bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"><Play className="h-3.5 w-3.5" />{isSimulating ? 'Simulating…' : 'Simulate'}<kbd className="hidden text-[10px] text-blue-100/70 lg:inline">{shortcut('⌘↵', 'Ctrl+↵')}</kbd></button>
+        <div className="relative hidden sm:block">
+          <button type="button" aria-expanded={showProviderDropdown} onClick={() => setShowProviderDropdown(value => !value)} className="inline-flex h-8 items-center gap-2 rounded-md border border-white/10 px-2.5 text-xs text-slate-300 transition-colors hover:bg-white/[.06] hover:text-white">
+            <Layers3 className="h-3.5 w-3.5 text-blue-400" />Provider mapping<ChevronDown className="h-3.5 w-3.5 text-slate-500" />
           </button>
           <ProviderMappingDropdown isOpen={showProviderDropdown} onClose={() => setShowProviderDropdown(false)} />
         </div>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <button onClick={onNewProject} className="hidden lg:inline-flex items-center gap-1.5 rounded-md border border-white/10 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-white/5"><FolderPlus className="h-3.5 w-3.5"/>Project</button>
-        <button onClick={onLoad} className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-white/10 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-white/5"><FolderOpen className="h-3.5 w-3.5"/>Open</button>
-        <button onClick={onSave} className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500"><Save className="h-3.5 w-3.5"/>Save</button>
-        <div className="hidden md:flex items-center gap-1">
-          <button className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-white/5 transition-colors tooltip-trigger" title="Undo (⌘Z)">
-            <Undo2 className="w-4 h-4" />
-          </button>
-          <button className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-white/5 transition-colors tooltip-trigger" title="Redo (⇧⌘Z)">
-            <Redo2 className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="w-px h-4 bg-white/10 hidden md:block mx-1"></div>
-
-        {/* Avatar Stack */}
-        <div className="hidden md:flex items-center -space-x-2 mr-2">
-          <div className="w-6 h-6 rounded-full border border-slate-900 bg-slate-800 flex items-center justify-center overflow-hidden z-40">
-            <img src="https://i.pravatar.cc/100?img=1" alt="User A" className="w-full h-full object-cover" />
-          </div>
-          <div className="w-6 h-6 rounded-full border border-slate-900 bg-blue-600 flex items-center justify-center text-[10px] font-semibold text-white z-30">
-            R
-          </div>
-          <div className="w-6 h-6 rounded-full border border-slate-900 bg-emerald-600 flex items-center justify-center text-[10px] font-semibold text-white z-20">
-            S
-          </div>
-          <div className="w-6 h-6 rounded-full border border-slate-900 bg-slate-700 flex items-center justify-center text-[10px] font-medium text-slate-300 z-10">
-            +3
-          </div>
-        </div>
-
-        <button className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-slate-300 bg-transparent hover:bg-white/5 border border-white/10 rounded-md transition-colors">
-          <Upload className="w-3.5 h-3.5" />
-          Share
-        </button>
-
-        <button onClick={onRunAnalysis} disabled={nodes.length === 0 || isSimulating} className="group flex items-center gap-2 px-4 py-1.5 bg-[#2563eb] rounded-full text-white text-xs font-medium hover:bg-blue-500 transition-all shadow-[0_0_15px_-3px_rgba(37,99,235,0.4)] hover:shadow-[0_0_20px_-3px_rgba(37,99,235,0.6)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none ml-1">
-          {isSimulating ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Play className="w-3.5 h-3.5 fill-current opacity-90" />
-          )}
-          <span>Simulate</span>
-        </button>
-
-        <button className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-slate-300 bg-transparent hover:bg-white/5 border border-white/10 rounded-md transition-colors ml-1">
-          <Download className="w-3.5 h-3.5" />
-          Export
-        </button>
-
-        <div className="w-px h-4 bg-white/10 mx-1"></div>
-
-        <button className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-white/5 transition-colors">
-          <Moon className="w-4 h-4" />
-        </button>
-
-        <div className="group relative ml-1">
-          <button title={user?.email ?? 'Account'} className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-600 bg-slate-700 text-[11px] font-semibold text-white">
-            {(user?.name || user?.email || 'A').slice(0, 2).toUpperCase()}
-          </button>
-          <div className="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-56 rounded-xl border border-white/10 bg-[#0b0f16] p-2 opacity-0 shadow-xl transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+        <button type="button" aria-label="Toggle theme" title="Toggle theme" className="hidden h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/[.08] hover:text-white sm:flex"><Moon className="h-4 w-4" /></button>
+        <div className="group relative">
+          <button type="button" title={user?.email ?? 'Account'} aria-label="Account" className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-600 bg-slate-700 text-[11px] font-semibold text-white">{(user?.name || user?.email || 'A').slice(0, 2).toUpperCase()}</button>
+          <div className="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-xl border border-white/10 bg-[#0b0f16] p-2 opacity-0 shadow-xl transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
             <div className="truncate px-3 py-2 text-xs text-slate-400">{user?.email}</div>
-            <button onClick={onSignOut} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-200 hover:bg-white/5">Sign out</button>
+            <button type="button" onClick={onSignOut} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-200 hover:bg-white/5">Sign out</button>
           </div>
         </div>
       </div>

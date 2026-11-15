@@ -5,6 +5,7 @@ import { db } from '../../infrastructure/database/client.js';
 import { architectures, projects } from '../../infrastructure/database/schema.js';
 import { createCanvasDocument, toCanvasDocument } from '../architectures/architecture.repository.js';
 import { createArchitectureSchema } from '../architectures/architecture.schemas.js';
+import { paginationSchema, projectCreateSchema, projectUpdateSchema } from './projects.schemas.js';
 
 export const projectsRouter = Router();
 projectsRouter.param('projectId', (_req, res, next, value) => {
@@ -14,14 +15,12 @@ projectsRouter.param('projectId', (_req, res, next, value) => {
   }
   next();
 });
-const projectInput = z.object({ name: z.string().trim().min(1).max(160), description: z.string().max(10000).default('') });
 const stamp = () => new Date().toISOString();
 const projectDto = (row: typeof projects.$inferSelect) => ({ id: row.id, name: row.name, description: row.description, createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() });
 const architectureDto = (row: typeof architectures.$inferSelect) => ({ id: row.id, projectId: row.projectId, name: row.name, description: row.description, type: row.type, version: row.version, providerProfile: row.providerProfile, nodes: row.nodes, edges: row.edges, canvasMetadata: row.canvasMetadata, createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() });
 
 projectsRouter.get('/', async (req, res) => {
-  const page = Math.max(1, Number.parseInt(String(req.query.page ?? '1'), 10) || 1);
-  const limit = Math.min(100, Math.max(1, Number.parseInt(String(req.query.limit ?? '20'), 10) || 20));
+  const { page, limit } = paginationSchema.parse(req.query);
   const rows = await db.select().from(projects).where(eq(projects.ownerId, req.userId!)).orderBy(desc(projects.updatedAt)).limit(limit).offset((page - 1) * limit);
   const [count] = await db.select({ value: sql<number>`count(*)::int` }).from(projects).where(eq(projects.ownerId, req.userId!));
   const total = count?.value ?? 0;
@@ -34,7 +33,7 @@ projectsRouter.get('/', async (req, res) => {
 });
 
 projectsRouter.post('/', async (req, res) => {
-  const input = projectInput.parse(req.body);
+  const input = projectCreateSchema.parse(req.body);
   const [row] = await db.insert(projects).values({ ...input, ownerId: req.userId! }).returning();
   res.status(201).json({
     success: true,
@@ -65,8 +64,7 @@ projectsRouter.get('/:projectId', async (req, res) => {
 projectsRouter.get('/:projectId/architectures', async (req, res) => {
   const [project] = await db.select({ id: projects.id }).from(projects).where(and(eq(projects.id, req.params.projectId!), eq(projects.ownerId, req.userId!))).limit(1);
   if (!project) return res.status(404).json({ success: false, message: 'Project not found', timestamp: stamp() });
-  const page = Math.max(1, Number.parseInt(String(req.query.page ?? '1'), 10) || 1);
-  const limit = Math.min(100, Math.max(1, Number.parseInt(String(req.query.limit ?? '20'), 10) || 20));
+  const { page, limit } = paginationSchema.parse(req.query);
   const rows = await db.select().from(architectures).where(eq(architectures.projectId, project.id)).orderBy(desc(architectures.updatedAt)).limit(limit).offset((page - 1) * limit);
   const [count] = await db.select({ value: sql<number>`count(*)::int` }).from(architectures).where(eq(architectures.projectId, project.id));
   const total = count?.value ?? 0;
@@ -83,7 +81,7 @@ projectsRouter.post('/:projectId/architectures', async (req, res) => {
 });
 
 projectsRouter.patch('/:projectId', async (req, res) => {
-  const input = projectInput.partial().parse(req.body);
+  const input = projectUpdateSchema.parse(req.body);
   const [row] = await db.update(projects).set({ ...input, updatedAt: new Date() }).where(and(eq(projects.id, req.params.projectId!), eq(projects.ownerId, req.userId!))).returning();
   if (!row)
     return res.status(404).json({

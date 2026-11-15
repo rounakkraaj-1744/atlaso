@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowRight, Eye, EyeOff, Layers3, LoaderCircle, LockKeyhole, Mail, UserRound, Zap } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Layers3, LoaderCircle, LockKeyhole, Mail, UserRound, Zap } from '../../lib/icons';
 import { api } from '../../lib/api';
 
 interface AuthScreenProps {
@@ -34,11 +34,11 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#09090b] px-4 py-10 text-slate-100">
-      <div className="pointer-events-none absolute -left-40 -top-48 h-[520px] w-[520px] rounded-full bg-blue-600/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-56 -right-32 h-[560px] w-[560px] rounded-full bg-indigo-500/10 blur-[130px]" />
+      <div className="pointer-events-none absolute -left-40 -top-48 h-130 w-130 rounded-full bg-blue-600/10 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-56 -right-32 h-140 w-140 rounded-full bg-indigo-500/10 blur-[130px]" />
 
       <div className="relative grid w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-[#0d0f14]/90 shadow-[0_35px_120px_rgba(0,0,0,0.55)] md:grid-cols-[1.05fr_0.95fr]">
-        <section className="hidden flex-col justify-between border-r border-white/5 bg-gradient-to-br from-blue-500/10 via-transparent to-indigo-500/5 p-10 md:flex lg:p-14">
+        <section className="hidden flex-col justify-between border-r border-white/5 bg-linear-to-br from-blue-500/10 via-transparent to-indigo-500/5 p-10 md:flex lg:p-14">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-950/50"><Zap className="h-5 w-5 fill-current" /></span>
             <div><div className="text-lg font-semibold tracking-tight">Atlaso</div><div className="text-xs text-slate-500">Engineering IDE for System Design</div></div>
